@@ -1,0 +1,64 @@
+.Comment{
+    padding: 10px;
+}
+
+.Comment textarea{
+    height: 100px;
+    resize: none;
+    width: 400px;
+    font-size: 16px;
+    font-family: Montserrat, sans-serif;
+    color: black;
+    border: 2px solid #1976D2;
+    background-color: transparent;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.Comment textarea:focus{
+    outline: none;
+}
+.Comment span{
+    margin-right: 10px;
+
+}
+
+.role{
+    text-transform: capitalize;
+}
+
+.date{
+    font-size: 14px;
+}
+
+.student{
+    color: #1976D2;
+}
+
+.teacher{
+    color: #d84315;
+}
+.teacherStyle{
+    border-color:  #d84315 !important;
+}
+
+.name{
+
+}
+
+@media (max-width: 440px) {
+    .Comment textarea{
+        width: 300px;
+        font-size: 13px;
+        height: 90px;
+
+    }
+}
+
+@media (max-width: 350px) {
+    .Comment textarea{
+        font-size: 12px;
+        width: 265px;
+    }
+}
+

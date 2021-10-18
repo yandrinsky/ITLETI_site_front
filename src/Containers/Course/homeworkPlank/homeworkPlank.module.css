@@ -1,0 +1,31 @@
+.HomeworkPlank{
+    padding: 10px;
+    background-color: rgba(255,202,40, 0.7);
+    max-width: 600px;
+    min-height: 100px;
+    text-align: left;
+    margin-bottom: 30px;
+    font-family: "Montserrat", sans-serif;
+    cursor: pointer;
+    box-shadow: 5px 5px 5px 0 rgba(84,110,122, 0.5);
+    transition: all 0.2s ease-in;
+}
+.HomeworkPlank:hover{
+    transform: scale(1.02);
+    box-shadow: 12px 12px 5px 0 rgba(84,110,122, 0.5);
+    transition: all 0.2s ease-in;
+}
+.title{
+    font-weight: bold;
+    margin-bottom: 15px;
+    margin-left: 25px;
+    font-size: 16px;
+    color: #263238
+}
+.description{
+    width: 80%;
+}
+
+.close{
+    background-color: #cfd8dc !important;
+}

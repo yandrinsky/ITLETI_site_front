@@ -1,0 +1,44 @@
+.logo{
+    cursor: pointer;
+}
+.logo span{
+    transition: color 0.1s ease-in;
+}
+.logo span:first-child{
+    color: #CC0000;
+}
+.logo:hover span:first-child{
+    color: white;
+}
+
+.logo:hover span:last-child{
+    color: #CC0000;
+}
+.Header{
+    position: relative;
+    z-index: 100;
+}
+
+.name{
+
+}
+.title{
+
+}
+@media (max-width: 500px) {
+    .name{
+        font-size: 12px !important;
+    }
+    .title{
+        font-size: 1.15rem !important;
+    }
+}
+
+@media (max-width: 500px) {
+    .name{
+        font-size: 12px !important;
+    }
+    .title{
+        font-size: 1.10rem !important;
+    }
+}

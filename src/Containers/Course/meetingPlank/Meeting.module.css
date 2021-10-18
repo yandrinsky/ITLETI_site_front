@@ -1,0 +1,9 @@
+.Meeting{
+    padding: 10px;
+    border: 4px solid #FFDA68;
+    background-color: transparent;
+}
+
+.success{
+    color: yellowgreen;
+}

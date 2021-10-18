@@ -1,0 +1,55 @@
+.Drawer {
+  position: fixed;
+  left: 0;
+  top: 50px;
+  bottom: 0;
+  width: 80%;
+  max-width: 300px;
+  box-sizing: border-box;
+  background: #fff;
+  transform: translateX(0px);
+  transition: transform 0.22s ease-in;
+  z-index: 90;
+}
+.Drawer li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.Drawer ul li {
+  margin-bottom: 15px;
+}
+.Drawer ul li a {
+  color: #363d54;
+  font-size: 30px;
+  text-decoration: none;
+  position: relative;
+  padding: 0 20px 10px 20px;
+  transition: all 0.2s ease-in;
+  cursor: pointer;
+}
+.Drawer ul li a:hover,
+.Drawer .active {
+  color: #1976D2;
+  transition: all 0.2s ease-out;
+}
+.Drawer.close {
+  transform: translateX(-300px);
+}
+
+@media (max-width: 500px) {
+  .Drawer ul li a{
+    font-size: 25px;
+    max-width: 250px;
+  }
+
+}
+
+@media (max-width: 400px) {
+  .Drawer ul li a{
+    font-size: 20px;
+  }
+  .Drawer ul li{
+    margin-bottom: 30px;
+  }
+}

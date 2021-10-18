@@ -1,0 +1,90 @@
+.Task{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.Task{
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.data h1{
+    display: flex;
+    align-items: center;
+}
+
+.form{
+    display: flex;
+    flex-direction: column;
+}
+.form button{
+    width: 120px;
+}
+
+.form textarea{
+    resize: none;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    font-family: "Montserrat", sans-serif;
+}
+
+.addComment{
+    cursor: pointer;
+    text-align: right;
+    margin-left: calc(100% - 20px);
+}
+
+.addComment:hover{
+    color: #1976D2;
+}
+
+.comments{
+    padding-left: 30px;
+}
+
+.currentComment{
+    position: relative;
+    margin-left: 30px;
+    max-width: 400px;
+}
+
+hr{
+    width: 100%;
+    margin-top: 20px;
+}
+
+.deleteComment{
+    position: absolute;
+    right: 10px;
+    top: 25px;
+    color: red;
+    cursor: pointer;
+
+}
+
+.error{
+    text-align: center;
+    color: red;
+    font-weight: bold;
+}
+
+.notCheckedIcon{
+    color: #ffc107;
+}
+
+.passedIcon{
+    color: #7cb342;
+}
+
+.failIcon{
+    color: #e64a19;
+}
+
+.icon{
+    width: 30px !important;
+    height: 30px !important;
+    margin-left: 10px;
+}

@@ -1,0 +1,9 @@
+.NLink{
+    text-decoration: none;
+    color: #282c34;
+    transition: all 0.08s ease-in;
+}
+
+.NLink:hover{
+    color: #1976D2;
+}

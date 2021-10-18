@@ -1,0 +1,13 @@
+
+.Layout{
+    width: 100%;
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+
+
+}
+
+.Layout main{
+
+}

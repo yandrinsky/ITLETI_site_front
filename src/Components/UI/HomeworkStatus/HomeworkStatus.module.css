@@ -1,0 +1,17 @@
+.notCheckedIcon{
+    color: #ffc107;
+}
+
+.passedIcon{
+    color: #7cb342;
+}
+
+.failIcon{
+    color: #e64a19;
+}
+
+.icon{
+    width: 30px !important;
+    height: 30px !important;
+    margin-left: 10px;
+}

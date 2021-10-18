@@ -1,0 +1,9 @@
+.Main{
+    height: calc(100vh - 65px);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
