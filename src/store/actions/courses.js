@@ -11,11 +11,11 @@ import {
     FETCH_COURSES_START,
     FETCH_COURSES_SUCCESS, FETCH_MEETING_START,
     FETCH_TASK,
-    FETCH_TASKS,
+    FETCH_TASKS, GRADE_MEETING_START, GRADE_MEETING_SUCCESS,
     JOIN_COURSE_SUCCESS,
     SEND_HOMEWORK_ERROR,
     SEND_HOMEWORK_START,
-    SEND_HOMEWORK_SUCCESS
+    SEND_HOMEWORK_SUCCESS, SET_GRADE_MEETING
 } from "./actionTypes";
 import {resetError} from "./error";
 
@@ -218,6 +218,59 @@ export function sendHomework(task_id, content, comment){
         }
     }
 }
+
+export function shouldGradeMeeting(course_id){
+    return async (dispatch, getState) => {
+        try{
+            const response = await axios.post('/shouldGradeMeeting',
+                {course_id},
+                getConfig(getState()),
+            )
+            dispatch(setGradeMeeting(response.data.grade));
+        } catch (e) {
+            dispatch(fetchCoursesError(e.response.data.message))
+        }
+
+    }
+}
+
+export function gradeMeeting(course_id, mark, comment){
+    return async (dispatch, getState) => {
+        try{
+            console.log("course_id, mark, comment", course_id, mark, comment)
+            dispatch(gradeMeetingStart());
+            const response = await axios.post('/gradeMeeting',
+                {course_id, mark, comment},
+                getConfig(getState()),
+            )
+            dispatch(gradeMeetingSuccess());
+        } catch (e) {
+            console.log("error", e)
+            dispatch(fetchCoursesError(e.response.data.message))
+        }
+
+    }
+}
+
+function gradeMeetingStart(){
+    return{
+        type: GRADE_MEETING_START,
+    }
+}
+
+function gradeMeetingSuccess(){
+    return{
+        type: GRADE_MEETING_SUCCESS,
+    }
+}
+
+function setGradeMeeting(grade){
+    return{
+        type: SET_GRADE_MEETING,
+        grade,
+    }
+}
+
 
 function fetchCoursesStart(){
     return {

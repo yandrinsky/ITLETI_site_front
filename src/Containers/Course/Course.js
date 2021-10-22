@@ -4,10 +4,10 @@ import {server} from "../../axios/server";
 import {connect} from "react-redux";
 import {
     fetchCourseById,
-    fetchCourseTasksById,
+    fetchCourseTasksById, gradeMeeting,
     resetCourse,
     resetCoursesError,
-    setMeeting, signupForMeeting, stopMeeting
+    setMeeting, shouldGradeMeeting, signupForMeeting, stopMeeting
 } from "../../store/actions/courses";
 import Loader from "../../Components/UI/Loader/Loader";
 import Tabs from '@mui/material/Tabs';
@@ -19,6 +19,7 @@ import {resetError, setError} from "../../store/actions/error";
 import Button from "../../Components/UI/Button/Button";
 import {setHomeworkCourseId, setHomeworkUserStatus} from "../../store/actions/homework";
 import MeetingPlank from "./meetingPlank/MeetingPlank";
+import Grade from "../../Components/Grade/Grade";
 class Course extends Component{
 
 
@@ -32,7 +33,6 @@ class Course extends Component{
     }
 
     componentDidMount() {
-        console.log("componentDidMount", this.props.readyStage)
         if(this.props.readyStage){
             this.initialLoad();
         }
@@ -46,6 +46,14 @@ class Course extends Component{
         if(nextProps.readyStage && this.state.initialLoad){
             this.initialLoad();
         }
+
+        if(!this.props.grade && this.props.id && !this.state.getGrade){
+            this.props.shouldGradeMeeting(this.props.id);
+            this.setState({
+                ...this.state,
+                getGrade: true,
+            })
+        }
     }
 
     componentWillUnmount() {
@@ -58,6 +66,8 @@ class Course extends Component{
         meetingTitle: "",
         meetingContent: "",
         initialLoad: true,
+        getGrade: false,
+        sendGrade: false,
     }
 
 
@@ -95,6 +105,7 @@ class Course extends Component{
         })
         this.props.setMeeting(this.props.id, this.state.meetingTitle, this.state.meetingContent)
     }
+
 
     render(){
         let upperThis = this;
@@ -235,6 +246,22 @@ class Course extends Component{
             else return null
         }
 
+        function gradeRender(){
+            if(this.props.grade){
+                if(!this.props.gradeLoading){
+                    return <Grade anonymous
+                                  title={this.props.grade.title}
+                                  date={this.props.grade.date.split("T")[0]}
+                                  onSend={(mark, comment)=> { this.props.gradeMeeting(this.props.id, mark, comment)}}
+                    />
+                } else {
+                    return <Loader/>
+                }
+            } else {
+                return null;
+            }
+        }
+
         return (
             <div>
                 {
@@ -245,6 +272,7 @@ class Course extends Component{
                                 <h1>{this.props.title}</h1>
                             </div>
                         </div>
+                        {gradeRender.call(this)}
                         {meetingRender.call(this)}
                         <div>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }} style={{display: 'flex', justifyContent: "center"}}>
@@ -259,7 +287,6 @@ class Course extends Component{
                                     Item One
                                 </TabPanel>
                                 <TabPanel value={this.state.value} props={this.props} index={1}>
-
                                     Item Two
                                 </TabPanel>
                                 <TabPanel value={this.state.value} props={this.props} index={3}>
@@ -288,6 +315,8 @@ function mapDispatchToProps(dispatch){
         setMeeting: (course_id, title, content) => {dispatch(setMeeting(course_id, title, content))},
         stopMeeting: (course_id) => {dispatch(stopMeeting(course_id))},
         signupForMeeting: (course_id) => {dispatch(signupForMeeting(course_id))},
+        shouldGradeMeeting: (course_id) => {dispatch(shouldGradeMeeting(course_id))},
+        gradeMeeting: (course_id, mark, comment) => {dispatch(gradeMeeting(course_id, mark, comment))},
     }
 }
 
@@ -305,6 +334,8 @@ function mapStateToProps(state){
         meeting: state.courses.course?.meeting,
         loading: state.courses.loading,
         readyStage: state.auth.readyStage,
+        grade: state.courses.grade,
+        gradeLoading: state.courses.gradeLoading,
     }
 }
 

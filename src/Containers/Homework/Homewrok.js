@@ -108,6 +108,10 @@ class Homework extends Component{
                                     allowFullScreen="allowfullscreen" frameBorder="0"
                                     className={css.iframe}
                             />
+                            {/*<iframe src={this.props.homework.content + "/embedded/"}*/}
+                            {/*        allowFullScreen="allowfullscreen" frameBorder="0"*/}
+                            {/*        className={css.iframe}*/}
+                            {/*/>*/}
                         </div>
                     )
                 } else {

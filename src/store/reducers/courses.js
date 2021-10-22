@@ -10,10 +10,10 @@ import {
     FETCH_COURSES_SUCCESS, FETCH_MEETING_START,
     FETCH_TASK,
     FETCH_TASK_START,
-    FETCH_TASKS,
+    FETCH_TASKS, GRADE_MEETING_START, GRADE_MEETING_SUCCESS,
     JOIN_COURSE_SUCCESS, SEND_HOMEWORK_ERROR,
     SEND_HOMEWORK_START,
-    SEND_HOMEWORK_SUCCESS,
+    SEND_HOMEWORK_SUCCESS, SET_GRADE_MEETING,
 } from "../actions/actionTypes";
 import {logout} from "../actions/auth";
 
@@ -28,6 +28,8 @@ const initialState = {
     homeworkError: null,
     homeworkSending: false,
     homeworkSuccess: false,
+    grade: null,
+    gradeLoading: false,
 }
 
 export default function coursesReducer(state = initialState, action){
@@ -117,7 +119,10 @@ export default function coursesReducer(state = initialState, action){
         case COURSES_RESET_COURSE:
             return {
                 ...state,
-                course: null
+                course: null,
+                grade: null,
+                gradeLoading: false,
+                tasks: null,
             }
         case FETCH_MEETING_START:
             return {
@@ -131,6 +136,22 @@ export default function coursesReducer(state = initialState, action){
                 ...state,
                 loading: false,
                 course,
+            }
+        case SET_GRADE_MEETING:
+            return {
+                ...state,
+                grade: action.grade,
+            }
+        case GRADE_MEETING_START:
+            return {
+                ...state,
+                gradeLoading: true,
+            }
+        case GRADE_MEETING_SUCCESS:
+            return {
+                ...state,
+                grade: null,
+                gradeLoading: false,
             }
         default:
             return state

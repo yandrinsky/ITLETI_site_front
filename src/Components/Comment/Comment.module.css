@@ -1,11 +1,12 @@
 .Comment{
     padding: 10px;
+    width: 100%;
 }
 
 .Comment textarea{
     height: 100px;
     resize: none;
-    width: 400px;
+    width: 100%;
     font-size: 16px;
     font-family: Montserrat, sans-serif;
     color: black;
@@ -48,7 +49,6 @@
 
 @media (max-width: 440px) {
     .Comment textarea{
-        width: 300px;
         font-size: 13px;
         height: 90px;
 
@@ -58,7 +58,6 @@
 @media (max-width: 350px) {
     .Comment textarea{
         font-size: 12px;
-        width: 265px;
     }
 }
 

@@ -17,6 +17,7 @@ import Course from "./Containers/Course/Course";
 import Task from "./Containers/Task/Task";
 import ERROR from "./Components/Error/ERROR";
 import Homework from "./Containers/Homework/Homewrok";
+import Article from "./Containers/Article/Article";
 export function Redirect(where){
     const history = useHistory();
     history.push(where);
@@ -25,7 +26,6 @@ export function Redirect(where){
 class App extends React.Component{
 
     async componentDidMount() {
-        console.log("APP did mount")
         await this.props.autoLogin();
         this.props.setReadyStage();
     }
@@ -42,6 +42,7 @@ class App extends React.Component{
                 <Route path={'/logout'} exact component={Logout} />
                 <Route path={'/error'} exact component={ERROR} />
                 <Route path={'/homework'} exact component={Homework} />
+                <Route path={'/article'} exact component={Article} />
                 <Route path={'/'} exact component={SwipeableTemporaryDrawer} />
                 <Route component={NotFound}/>
             </Switch>

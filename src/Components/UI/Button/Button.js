@@ -15,7 +15,6 @@ const Button = props => {
         cls.push(css.disabled);
     }
 
-    console.log("btn disabled", props.disabled)
     return(
         <button
             onClick={props.onClick}

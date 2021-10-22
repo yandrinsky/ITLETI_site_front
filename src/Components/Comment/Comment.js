@@ -18,6 +18,7 @@ export default (props)=> {
                       onChange={props.onChange || function (){}}
                       value={props.content}
                       className={textareaCls.join(" ")}
+                      placeholder={props.placeholder}
             >
             </textarea>
         </div>
