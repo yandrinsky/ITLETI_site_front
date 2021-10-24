@@ -18,6 +18,7 @@ import Task from "./Containers/Task/Task";
 import ERROR from "./Components/Error/ERROR";
 import Homework from "./Containers/Homework/Homewrok";
 import Article from "./Containers/Article/Article";
+import CreateTask from "./Components/CreateTask/CreateTask";
 export function Redirect(where){
     const history = useHistory();
     history.push(where);
@@ -42,6 +43,7 @@ class App extends React.Component{
                 <Route path={'/logout'} exact component={Logout} />
                 <Route path={'/error'} exact component={ERROR} />
                 <Route path={'/homework'} exact component={Homework} />
+                <Route path={'/setTask/:id'} exact component={CreateTask} />
                 <Route path={'/article'} exact component={Article} />
                 <Route path={'/'} exact component={SwipeableTemporaryDrawer} />
                 <Route component={NotFound}/>

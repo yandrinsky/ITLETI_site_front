@@ -9,11 +9,15 @@
     cursor: pointer;
     box-shadow: 5px 5px 5px 0 rgba(84,110,122, 0.5);
     transition: all 0.2s ease-in;
+    position: relative;
 }
 .HomeworkPlank:hover{
     transform: scale(1.02);
     box-shadow: 12px 12px 5px 0 rgba(84,110,122, 0.5);
     transition: all 0.2s ease-in;
+}
+.HomeworkPlank:hover .editBtn{
+    display: initial;
 }
 .title{
     font-weight: bold;
@@ -28,4 +32,15 @@
 
 .close{
     background-color: #cfd8dc !important;
+}
+
+.editBtn{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: none;
+}
+
+.editBtn:hover{
+    color: red;
 }

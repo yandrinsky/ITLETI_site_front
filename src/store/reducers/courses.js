@@ -3,7 +3,6 @@ import {
     COURSES_RESET_COURSE,
     COURSES_RESET_ERROR,
     COURSES_RESET_REDIRECT,
-    COURSES_RESET_TASK,
     FETCH_COURSE_SUCCESS,
     FETCH_COURSES_ERROR,
     FETCH_COURSES_START,
@@ -24,10 +23,6 @@ const initialState = {
     error: null,
     redirectTo: null,
     tasks: null,
-    task: null,
-    homeworkError: null,
-    homeworkSending: false,
-    homeworkSuccess: false,
     grade: null,
     gradeLoading: false,
 }
@@ -64,17 +59,6 @@ export default function coursesReducer(state = initialState, action){
                 ...state,
                 tasks: action.tasks,
             }
-        case FETCH_TASK_START:
-            return {
-                ...state,
-                task: null,
-            }
-        case FETCH_TASK:
-            return {
-                ...state,
-                task: action.task,
-                homeworkError: null,
-            }
         case JOIN_COURSE_SUCCESS:
             return {
                 ...state,
@@ -85,32 +69,7 @@ export default function coursesReducer(state = initialState, action){
                 ...state,
                 redirectTo: null,
             }
-        case COURSES_RESET_TASK:
-            return {
-                ...state,
-                task: null,
-            }
-        case SEND_HOMEWORK_START:
-            return {
-                ...state,
-                homeworkSending: true,
-                homeworkError: null,
-                homeworkSuccess: false,
-            }
-        case SEND_HOMEWORK_SUCCESS:
-            return {
-                ...state,
-                homeworkSending: false,
-                homeworkError: null,
-                homeworkSuccess: true,
-            }
-        case SEND_HOMEWORK_ERROR:
-            return {
-                ...state,
-                homeworkError: "Ошибка отправки ДЗ",
-                homeworkSending: false,
-                homeworkSuccess: false,
-            }
+
         case COURSES_RESET_ERROR:
             return {
                 ...state,

@@ -1,9 +1,11 @@
 import React, {Component} from "react"
 import {connect} from "react-redux";
-import {fetchTaskById, resetTask, sendHomework} from "../../store/actions/courses";
 import Loader from "../../Components/UI/Loader/Loader";
 import Button from "../../Components/UI/Button/Button";
 import css from "./Task.module.css"
+import {markdown} from "markdown"
+import markCss from "./../../markdown/Markdown.module.css"
+
 import AddCommentIcon from '@material-ui/icons/AddComment'
 import ClearIcon from '@material-ui/icons/Clear'
 
@@ -11,6 +13,7 @@ import Comment from "../../Components/Comment/Comment";
 import HomeworkStatus from "../../Components/UI/HomeworkStatus/HomeworkStatus";
 import {setError} from "../../store/actions/error";
 import {withRouter} from "react-router-dom";
+import {fetchTaskById, resetTask, sendHomework} from "../../store/actions/task";
 class Task extends Component{
 
 
@@ -150,8 +153,16 @@ class Task extends Component{
                 {!this.props.task ? <Loader type="page"/> :
                     <div className={css.Task}>
                         <div className={css.data}>
-                            <h1>{this.props.task.title} {<HomeworkStatus status={this.state.status}/>}</h1>
-                            <p>{this.props.task.content}</p>
+                            <div className={markCss["markdown-body"]}
+                               dangerouslySetInnerHTML={{__html: markdown.toHTML("#" + this.props.task.title)}}
+                            />
+                            <div className={css.hmwStatus}>
+                                <HomeworkStatus status={this.state.status}/>
+                            </div>
+
+                            <p className={markCss["markdown-body"]}
+                                dangerouslySetInnerHTML={{__html: markdown.toHTML(this.props.task.content)}}
+                            />
                         </div>
 
                         <div className={css.form}>
@@ -229,6 +240,7 @@ class Task extends Component{
     }
 }
 
+
 function mapDispatchToProps(dispatch){
     return {
         fetchTaskById: (id) => {dispatch(fetchTaskById(id))},
@@ -240,11 +252,11 @@ function mapDispatchToProps(dispatch){
 
 function mapStateToProps(state){
     return {
-        task: state.courses.task,
-        sending: state.courses.homeworkSending,
-        sendingError: state.courses.homeworkError,
-        sendingSuccess: state.courses.homeworkSuccess,
-        error: state.courses.error,
+        task: state.task.task,
+        sending: state.task.loading,
+        sendingError: state.task.error,
+        sendingSuccess: state.task.homeworkSuccess,
+        error: state.task.error,
         readyStage: state.auth.readyStage,
     }
 }

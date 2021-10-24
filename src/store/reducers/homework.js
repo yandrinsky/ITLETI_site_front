@@ -11,6 +11,8 @@ const initialState = {
     user_status: null,
     homework: null,
     finish: false,
+    loading: false,
+    createHomework: false,
 }
 
 export default function homeworkReducer(state = initialState, action){

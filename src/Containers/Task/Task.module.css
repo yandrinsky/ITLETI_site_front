@@ -88,3 +88,8 @@ hr{
     height: 30px !important;
     margin-left: 10px;
 }
+
+.hmwStatus{
+    display: flex;
+    justify-content: center;
+}

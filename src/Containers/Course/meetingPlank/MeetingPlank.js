@@ -5,7 +5,7 @@ import Loader from "../../../Components/UI/Loader/Loader";
 export default (props)=> {
     return (
         <div className={css.Meeting}>
-            <h2>Прямо сейчас походит занятие</h2>
+            <h2>Прямо сейчас проходит занятие</h2>
             <hr/>
             <h3>{props.title}</h3>
             <p>{props.content}</p>

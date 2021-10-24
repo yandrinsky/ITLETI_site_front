@@ -1,0 +1,18 @@
+.CreateHomework{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.CreateHomework .wrapper{
+    max-width: 900px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.btnWrapper{
+    display: inline-block;
+    margin-top: 20px;
+}

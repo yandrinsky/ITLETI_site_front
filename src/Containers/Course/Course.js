@@ -20,6 +20,7 @@ import Button from "../../Components/UI/Button/Button";
 import {setHomeworkCourseId, setHomeworkUserStatus} from "../../store/actions/homework";
 import MeetingPlank from "./meetingPlank/MeetingPlank";
 import Grade from "../../Components/Grade/Grade";
+import CourseBackground from "./CourseBackground/CourseBackground";
 class Course extends Component{
 
 
@@ -132,10 +133,14 @@ class Course extends Component{
                     } else {
                         content = upperThis.props.tasks.map((task, index) => {
                             return <HomeworkPlank key={index}
-                                                  title={task.title}
-                                                  description={task.content}
-                                                  status={task.status}
-                                                  id={task._id}
+                                          title={task.title}
+                                          description={task.content}
+                                          status={task.status}
+                                          id={task._id}
+                                          editable={props.props.role === "TEACHER"}
+                                          onEdit={()=> {
+                                              upperThis.props.history.push("/setTask/" + upperThis.props.id + "_" + task._id)
+                                          }}
                             />
                         })
 
@@ -149,13 +154,17 @@ class Course extends Component{
                                 >Проверить ДЗ</Button>
                                 <div style={{marginBottom: 20}}/>
 
+                                <Button type="primary" key={Math.random()}
+                                    onClick={()=> props.props.history.push("/setTask/" + props.props.id + "_new")}
+                                >Задать ДЗ</Button>
+                                <div style={{marginBottom: 20}}/>
+
                             </>)
                             content.unshift(checkHomeworksBtn);
                         }
                     }
                 }
             }
-
 
             return (
                 <div
@@ -268,9 +277,7 @@ class Course extends Component{
                     !this.props.title ? <Loader type="page"/> :
                     <>
                         <div className={css.Course}>
-                            <div className={css.header} style={{backgroundImage: `url("${server}${this.props.preview}")`}}>
-                                <h1>{this.props.title}</h1>
-                            </div>
+                            <CourseBackground title={this.props.title} preview={this.props.preview}/>
                         </div>
                         {gradeRender.call(this)}
                         {meetingRender.call(this)}

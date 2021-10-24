@@ -1,21 +1,16 @@
 import axios from "../../axios/courses";
 import {
-    AUTH_RESET_REDIRECT,
     COURSE_UPDATE_MEETING,
     COURSES_RESET_COURSE,
     COURSES_RESET_ERROR,
     COURSES_RESET_REDIRECT,
-    COURSES_RESET_TASK,
     FETCH_COURSE_SUCCESS,
     FETCH_COURSES_ERROR,
     FETCH_COURSES_START,
     FETCH_COURSES_SUCCESS, FETCH_MEETING_START,
-    FETCH_TASK,
     FETCH_TASKS, GRADE_MEETING_START, GRADE_MEETING_SUCCESS,
     JOIN_COURSE_SUCCESS,
-    SEND_HOMEWORK_ERROR,
-    SEND_HOMEWORK_START,
-    SEND_HOMEWORK_SUCCESS, SET_GRADE_MEETING
+    SET_GRADE_MEETING
 } from "./actionTypes";
 import {resetError} from "./error";
 
@@ -80,24 +75,24 @@ export function fetchCourseTasksById(id){
 }
 
 
-export function fetchTaskById(id){
-    return async (dispatch, getState)=> {
-        try{
-            const token = getState().auth.token;
-            const config = {
-                headers: {
-                    authorization: token,
-                }
-            }
-            const tasks = await axios.post(`/getTask`, {
-                task_id: id,
-            }, config)
-            dispatch(fetchTask(tasks.data))
-        } catch (e) {
-            dispatch(fetchCoursesError(e.response.data.message))
-        }
-    }
-}
+// export function fetchTaskById(id){
+//     return async (dispatch, getState)=> {
+//         try{
+//             const token = getState().auth.token;
+//             const config = {
+//                 headers: {
+//                     authorization: token,
+//                 }
+//             }
+//             const tasks = await axios.post(`/getTask`, {
+//                 task_id: id,
+//             }, config)
+//             dispatch(fetchTask(tasks.data))
+//         } catch (e) {
+//             dispatch(fetchCoursesError(e.response.data.message))
+//         }
+//     }
+// }
 
 export function joinCourse(id){
     return async (dispatch, getState) => {
@@ -174,50 +169,28 @@ export function signupForMeeting(course_id){
     }
 }
 
-export function resetRedirect(){
-    return {
-        type: COURSES_RESET_REDIRECT
-    }
-}
-export function resetTask(){
-    return{
-        type: COURSES_RESET_TASK
-    }
-}
 
-export function resetCourse(){
-    return {
-        type: COURSES_RESET_COURSE,
-    }
-}
-
-export function resetCoursesError(){
-    return{
-        type: COURSES_RESET_ERROR,
-    }
-}
-
-export function sendHomework(task_id, content, comment){
-    return async (dispatch, getState) => {
-        const token = getState().auth.token;
-        const config = {
-            headers: {
-                authorization: token,
-            }
-        }
-        try{
-            dispatch(sendHomeworkStart());
-            const response = await axios.post("/sendHomework", {
-                task_id, content, comment
-            }, config)
-            dispatch(sendHomeworkSuccess());
-            dispatch(resetTask());
-            dispatch(fetchTaskById(task_id));
-        } catch(e){
-            dispatch(sendHomeworkError());
-        }
-    }
-}
+// export function sendHomework(task_id, content, comment){
+//     return async (dispatch, getState) => {
+//         const token = getState().auth.token;
+//         const config = {
+//             headers: {
+//                 authorization: token,
+//             }
+//         }
+//         try{
+//             dispatch(sendHomeworkStart());
+//             const response = await axios.post("/sendHomework", {
+//                 task_id, content, comment
+//             }, config)
+//             dispatch(sendHomeworkSuccess());
+//             dispatch(resetTask());
+//             dispatch(fetchTaskById(task_id));
+//         } catch(e){
+//             dispatch(sendHomeworkError());
+//         }
+//     }
+// }
 
 export function shouldGradeMeeting(course_id){
     return async (dispatch, getState) => {
@@ -237,7 +210,6 @@ export function shouldGradeMeeting(course_id){
 export function gradeMeeting(course_id, mark, comment){
     return async (dispatch, getState) => {
         try{
-            console.log("course_id, mark, comment", course_id, mark, comment)
             dispatch(gradeMeetingStart());
             const response = await axios.post('/gradeMeeting',
                 {course_id, mark, comment},
@@ -249,6 +221,41 @@ export function gradeMeeting(course_id, mark, comment){
             dispatch(fetchCoursesError(e.response.data.message))
         }
 
+    }
+}
+
+// export function setTask(course_id, title, content, task_id){
+//     //task_id === null, если новое задание, иначе обновление задания
+//     return async (dispatch, getState) => {
+//         try{
+//             const response = await axios.post('/setTask',
+//                 {course_id, title, content, task_id},
+//                 getConfig(getState()),
+//             )
+//             dispatch(gradeMeetingSuccess());
+//         } catch (e) {
+//             console.log("error", e)
+//             dispatch(fetchCoursesError(e.response.data.message))
+//         }
+//     }
+// }
+
+export function resetRedirect(){
+    return {
+        type: COURSES_RESET_REDIRECT
+    }
+}
+
+
+export function resetCourse(){
+    return {
+        type: COURSES_RESET_COURSE,
+    }
+}
+
+export function resetCoursesError(){
+    return{
+        type: COURSES_RESET_ERROR,
     }
 }
 
@@ -313,30 +320,30 @@ function fetchTasks(tasks){
     }
 }
 
-function fetchTask(task){
-    return{
-        type: FETCH_TASK,
-        task,
-    }
-}
-
-function sendHomeworkStart(){
-    return {
-        type: SEND_HOMEWORK_START,
-    }
-}
-
-function sendHomeworkSuccess(){
-    return {
-        type: SEND_HOMEWORK_SUCCESS,
-    }
-}
-
-function sendHomeworkError(){
-    return {
-        type: SEND_HOMEWORK_ERROR,
-    }
-}
+// function fetchTask(task){
+//     return{
+//         type: FETCH_TASK,
+//         task,
+//     }
+// }
+//
+// function sendHomeworkStart(){
+//     return {
+//         type: SEND_HOMEWORK_START,
+//     }
+// }
+//
+// function sendHomeworkSuccess(){
+//     return {
+//         type: SEND_HOMEWORK_SUCCESS,
+//     }
+// }
+//
+// function sendHomeworkError(){
+//     return {
+//         type: SEND_HOMEWORK_ERROR,
+//     }
+// }
 
 function updateCourseMeeting(meeting){
     return {
