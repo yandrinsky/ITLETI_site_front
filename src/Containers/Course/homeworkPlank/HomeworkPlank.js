@@ -21,6 +21,11 @@ export default withRouter((props)=> {
     function handlerEditLever(){
         setEdit(false)
     }
+    function createDescription(description){
+        let div = document.createElement("div");
+        div.innerHTML = markdown.toHTML(description).slice(0, 100);
+        return div.children[0].children[0].innerHTML.slice(0, 100) + "...";
+    }
 
     return (
         <div className={cls.join(" ")} onClick={!edit ? mainClick: () => {}}>
@@ -33,10 +38,10 @@ export default withRouter((props)=> {
                 {props.title}
             </div>
             <div className={css.description}
-                dangerouslySetInnerHTML={{
-                    __html: markdown.toHTML(props.description).slice(0, 100) + "..."
-                }}
-            />
+                // dangerouslySetInnerHTML={{
+                //     __html:createDescription(props.description)
+                // }}
+            >{createDescription(props.description)}</div>
         </div>
     )
 })

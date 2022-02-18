@@ -23,6 +23,7 @@ const initialState = {
     error: null,
     redirectTo: null,
     tasks: null,
+    meetings: null,
     grade: null,
     gradeLoading: false,
 }

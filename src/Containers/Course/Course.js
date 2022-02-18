@@ -123,10 +123,8 @@ class Course extends Component{
             let content;
             if(value === index){
                 if(props.value === 0){
-                    if(upperThis.props.articles.length === 0) content = <>Пусто</>
-                }
-
-                if(props.value === 1){
+                    if(!upperThis.props.about) content = <>Пусто</>
+                } else if(props.value === 1){
                     if(upperThis.props.tasks === null){
                         content = <Loader type="page"/>
                         upperThis.props.fetchTasks(upperThis.props.match.params.id);
@@ -143,27 +141,45 @@ class Course extends Component{
                                           }}
                             />
                         })
-
-                        if(props.props.role === "TEACHER"){
-                            const checkHomeworksBtn = (<>
-                                <Button type="primary" onClick={() => {
-                                    props.props.setHomeworkCourseId(props.props.id);
-                                    props.props.history.push("/homework");
-                                }}  key={Math.random()}
-
-                                >Проверить ДЗ</Button>
-                                <div style={{marginBottom: 20}}/>
-
-                                <Button type="primary" key={Math.random()}
-                                    onClick={()=> props.props.history.push("/setTask/" + props.props.id + "_new")}
-                                >Задать ДЗ</Button>
-                                <div style={{marginBottom: 20}}/>
-
-                            </>)
-                            content.unshift(checkHomeworksBtn);
-                        }
                     }
+                } else if(props.value === 2){
+                    if(upperThis.props.meetings === null){
+                        content = <Loader type="page"/>
+                        //upperThis.props.fetchTasks(upperThis.props.match.params.id);
+                    } else {
+                        content = upperThis.props.meetings.map((task, index) => {
+                            return <HomeworkPlank key={index}
+                                                  title={task.title}
+                                                  description={task.content}
+                                                  status={task.status}
+                                                  id={task._id}
+                                                  editable={props.props.role === "TEACHER"}
+                                                  onEdit={()=> {
+                                                      upperThis.props.history.push("/setTask/" + upperThis.props.id + "_" + task._id)
+                                                  }}
+                            />
+                        })
+                    }
+                } else if(props.value === 3) {
+                    if(props.props.role === "TEACHER"){
+                        content = <>
+                            <Button type="primary" onClick={() => {
+                                props.props.setHomeworkCourseId(props.props.id);
+                                props.props.history.push("/homework");
+                            }}  key={Math.random()}
+
+                            >Проверить ДЗ</Button>
+                            <div style={{marginBottom: 20}}/>
+
+                            <Button type="primary" key={Math.random()}
+                                    onClick={()=> props.props.history.push("/setTask/" + props.props.id + "_new")}
+                            >Задать ДЗ</Button>
+                            <div style={{marginBottom: 20}}/>
+                        </>
+                    }
+
                 }
+
             }
 
             return (
@@ -284,9 +300,13 @@ class Course extends Component{
                         <div>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }} style={{display: 'flex', justifyContent: "center"}}>
                                 <Tabs value={this.state.value} onChange={this.handleChange} aria-label="basic tabs example">
-                                    <Tab label="Статьи" {...a11yProps(0)} />
+                                    <Tab label="О курсе" {...a11yProps(0)} />
                                     <Tab label="Задачи" {...a11yProps(1)} />
-                                    <Tab label="Полезно" {...a11yProps(2)} />
+                                    <Tab label="Занятия" {...a11yProps(2)} />
+                                    {this.props.role === "TEACHER" ?
+                                        <Tab label="Преподавателю" {...a11yProps(3)} /> :
+                                        null
+                                    }
                                 </Tabs>
                             </Box>
                             <div className={css.tabContent}>
@@ -294,6 +314,9 @@ class Course extends Component{
                                     Item One
                                 </TabPanel>
                                 <TabPanel value={this.state.value} props={this.props} index={1}>
+                                    Item Two
+                                </TabPanel>
+                                <TabPanel value={this.state.value} props={this.props} index={2}>
                                     Item Two
                                 </TabPanel>
                                 <TabPanel value={this.state.value} props={this.props} index={3}>
@@ -333,8 +356,9 @@ function mapStateToProps(state){
         description: state.courses.course?.description,
         preview: state.courses.course?.preview,
         teachers: state.courses.course?.teachers,
-        articles: state.courses.course?.articles,
+        about: state.courses.course?.about,
         tasks: state.courses.tasks,
+        meetings: state.courses.meetings,
         error: state.courses.error,
         role: state.courses.course?.role,
         id: state.courses.course?.id,

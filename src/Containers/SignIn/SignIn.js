@@ -16,6 +16,7 @@ import {NLink} from "../../Components/UI/NLink/Nlink";
 import {connect} from "react-redux";
 
 import {resetRedirect, signIn} from "../../store/actions/auth";
+import Loader from "../../Components/UI/Loader/Loader";
 
 function Copyright(props) {
     return (
@@ -38,6 +39,7 @@ class  SignIn extends React.Component{
 
     state = {
         error: false,
+        tryingToSignIn: false,
     }
 
     messages(){
@@ -65,7 +67,9 @@ class  SignIn extends React.Component{
     componentWillReceiveProps(nextProps) {
         if (nextProps.needToRedirect && !nextProps.error) {
             resetRedirect();
-            nextProps.history.push('/');
+            nextProps.history.push('/courses');
+        } else {
+            this.setState({...this.state, tryingToSignIn: false})
         }
     }
 
@@ -79,6 +83,7 @@ class  SignIn extends React.Component{
 
         if(email && password){
             this.props.signIn(email, password);
+            this.setState({...this.state, tryingToSignIn: true})
         } else {
             this.setState({error: true})
         }
@@ -142,15 +147,19 @@ class  SignIn extends React.Component{
                                     control={<Checkbox value="remember" color="primary" />}
                                     label="Remember me"
                                 />
+                                {
+                                    !this.state.tryingToSignIn ?
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            variant="contained"
+                                            sx={{ mt: 3, mb: 2 }}
+                                        >
+                                            Войти
+                                        </Button>
+                                        : <Loader/>
+                                }
 
-                                <Button
-                                    type="submit"
-                                    fullWidth
-                                    variant="contained"
-                                    sx={{ mt: 3, mb: 2 }}
-                                >
-                                    Войти
-                                </Button>
                                 <Grid container>
                                     <Grid item xs>
                                         <NLink to="#" variant="body2">

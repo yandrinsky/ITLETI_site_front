@@ -5,10 +5,25 @@ import {getHomework, gradeHomework} from "../../store/actions/homework";
 import Loader from "../../Components/UI/Loader/Loader";
 import Comment from "../../Components/Comment/Comment";
 import HomeworkStatus from "../../Components/UI/HomeworkStatus/HomeworkStatus";
+
+//Интерфейс проверки дз преподавателем
+
 class Homework extends Component{
 
     componentDidMount() {
         this.props.getHomework();
+
+        this.setState({
+            ...this.state,
+            clickGradeBtn: false,
+        })
+    }
+
+    componentWillReceiveProps(nextProps, nextContext) {
+        this.setState({
+            ...this.state,
+            clickGradeBtn: false,
+        });
     }
 
 
@@ -16,6 +31,7 @@ class Homework extends Component{
         showComments: false,
         commentText: "",
         finish: false,
+        clickGradeBtn: false,
     }
 
     commentHandler(e){
@@ -52,12 +68,30 @@ class Homework extends Component{
         this.setState({
             ...this.state,
             commentText: "",
+            clickGradeBtn: true,
         })
 
         this.props.gradeHomework(this.props.id, status, commentText || null);
     }
 
+
+
     innerRender(){
+        function getFrameSrc(){
+            let iframeSrc;
+
+            if(this.props.task.frame){
+                if(this.props.task.frameOption){
+                    iframeSrc = this.props.task.frameOption.replace("$", this.props.homework.content);
+                } else {
+                    iframeSrc = this.props.homework.content;
+                }
+            }
+            console.log("getFrameSrc", this.props);
+            return iframeSrc;
+        }
+
+
         if(this.props.courseId){
             if(this.props.finish){
                 return <h1>Проверять больше нечего</h1>
@@ -74,25 +108,28 @@ class Homework extends Component{
                                 <div className={css.homeworkItems}>
                                     <p>Осталось работ: {this.props.needToCheck}</p>
                                     <p>Student work</p>
-                                    <p>{this.props.homework.content}</p>
+
+                                    {this.props.task.frame ? <p>{this.props.homework.content}</p> : null}
+
                                     <button onClick={() => {
                                         this.setState({showComments: !this.state.showComments})
                                     }}>
                                         Комментарии: {this.props.homework.comments.length}
                                     </button>
                                     <br/>
-                                    <div className={css.check_btn} onClick={() => {
-                                        this.gradeHandler("PASSED")
-                                    }}>
-                                        <HomeworkStatus status={"PASSED"}/>
-                                    </div>
-                                    <div className={css.check_btn} onClick={() => {
-                                        this.gradeHandler("FAILED")
-                                    }}>
-                                        <HomeworkStatus status={"FAILED"}/>
-                                    </div>
+                                    {!this.state.clickGradeBtn ? <>
+                                        <div className={css.check_btn} onClick={() => {
+                                            this.gradeHandler("PASSED")
+                                        }}>
+                                            <HomeworkStatus status={"PASSED"}/>
+                                        </div>
 
-
+                                        <div className={css.check_btn} onClick={() => {
+                                            this.gradeHandler("FAILED")
+                                        }}>
+                                            <HomeworkStatus status={"FAILED"}/>
+                                        </div>
+                                    </> : <Loader/>}
                                 </div>
 
                             </div>
@@ -104,14 +141,16 @@ class Homework extends Component{
                                     </>
                                     : null
                             }
-                            <iframe src={this.props.homework.content + "/embedded/"}
-                                    allowFullScreen="allowfullscreen" frameBorder="0"
-                                    className={css.iframe}
-                            />
-                            {/*<iframe src={this.props.homework.content + "/embedded/"}*/}
-                            {/*        allowFullScreen="allowfullscreen" frameBorder="0"*/}
-                            {/*        className={css.iframe}*/}
-                            {/*/>*/}
+
+                            {
+                                this.props.task.frame ?
+                                    <iframe src={getFrameSrc.call(this)}
+                                            allowFullScreen="allowfullscreen" frameBorder="0"
+                                            className={css.iframe}
+                                    />
+                                : <div className={css.text_homework}>{this.props.homework.content}</div>
+                            }
+
                         </div>
                     )
                 } else {
@@ -125,13 +164,13 @@ class Homework extends Component{
     }
 
     render() {
-        return (<>{this.innerRender()}</>)
+        return this.innerRender();
     }
 }
 
 function mapDispatchToProps(dispatch){
     return {
-        getHomework: (courseId) => {dispatch(getHomework(courseId))},
+        getHomework: () => {dispatch(getHomework())},
         gradeHomework: (id, status, comment) => {dispatch(gradeHomework(id, status, comment))}
     }
 }

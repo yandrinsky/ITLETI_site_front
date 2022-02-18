@@ -30,3 +30,9 @@
 .check_btn:hover{
     outline: 1px solid black;
 }
+
+.text_homework{
+    width: 100%;
+    padding: 10px;
+    font-size: 20px;
+}

@@ -39,6 +39,7 @@ export function getHomework(){
 
             dispatch(setHomework(response.data));
         } catch (e) {
+            console.log("getHomework e", e);
             if(e.response.status === 404){
                 dispatch(overHomework());
             }

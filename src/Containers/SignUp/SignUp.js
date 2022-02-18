@@ -13,6 +13,7 @@ import {NLink} from "../../Components/UI/NLink/Nlink";
 import is from "is_js"
 import {connect} from "react-redux";
 import {registration, resetRedirect} from "../../store/actions/auth";
+import Loader from "../../Components/UI/Loader/Loader";
 
 function Copyright(props) {
     return (
@@ -56,13 +57,15 @@ class SignUp extends React.Component{
 
     state = {
         error: null,
+        tryingToSignUp: false,
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
-
         if (nextProps.needToRedirect && !nextProps.error) {
             resetRedirect();
-            nextProps.history.push('/');
+            nextProps.history.push('/courses');
+        } else {
+            this.setState({...this.state, tryingToSignUp: false})
         }
     }
 
@@ -107,6 +110,7 @@ class SignUp extends React.Component{
                 return;
             }
             setError(null);
+            this.setState({...this.state, tryingToSignUp: true})
             this.props.register(email, password, group, vk, name, surname);
 
 
@@ -193,14 +197,19 @@ class SignUp extends React.Component{
                                     />
                                 </Grid>
                             </Grid>
-                            <Button
-                                type="submit"
-                                fullWidth
-                                variant="contained"
-                                sx={{ mt: 3, mb: 2 }}
-                            >
-                                Регистрация
-                            </Button>
+                            {
+                                !this.state.tryingToSignUp ?
+                                    <Button
+                                        type="submit"
+                                        fullWidth
+                                        variant="contained"
+                                        sx={{ mt: 3, mb: 2 }}
+                                    >
+                                        Регистрация
+                                    </Button> :
+                                    <Loader/>
+                            }
+
                             <Grid container justifyContent="flex-end">
                                 <Grid item>
                                     <NLink to="/signin">

@@ -14,6 +14,10 @@ import HomeworkStatus from "../../Components/UI/HomeworkStatus/HomeworkStatus";
 import {setError} from "../../store/actions/error";
 import {withRouter} from "react-router-dom";
 import {fetchTaskById, resetTask, sendHomework} from "../../store/actions/task";
+import {logout} from "../../store/actions/auth";
+
+
+//Интерфейст отправки дз учеником
 class Task extends Component{
 
 
@@ -59,7 +63,8 @@ class Task extends Component{
         if(nextProps.task){
             if(nextProps.task !== this.props.task){
                 this.setState({
-                    status: nextProps.task.type,
+                    //status: nextProps.task.type,
+                    status: nextProps.task.status,
                     comments: nextProps.task.comments,
                 })
             }
@@ -157,6 +162,7 @@ class Task extends Component{
                                dangerouslySetInnerHTML={{__html: markdown.toHTML("#" + this.props.task.title)}}
                             />
                             <div className={css.hmwStatus}>
+
                                 <HomeworkStatus status={this.state.status}/>
                             </div>
 
@@ -167,13 +173,28 @@ class Task extends Component{
 
                         <div className={css.form}>
                             <h2>Ваш ответ: </h2>
-                            <textarea name="" id="" cols="30" rows="10"
-                                      disabled={!this.props.task.ableToSend}
-                                      value={this.state.homeworkText}
-                                      onChange={this.homeworkHandle.bind(this)}
-                            >
+                            {
+                                this.props.task.contentType === "LINK" ?
+                                    <>
+                                        <p>Ожидается ссылка на ресурс {this.props.task.resource}</p>
+                                        <input type="text" disabled={!this.props.task.ableToSend}
+                                               value={this.state.homeworkText}
+                                               onChange={this.homeworkHandle.bind(this)}
+                                        />
+                                    </> : null
 
-                            </textarea>
+
+                            }
+                            {
+                                this.props.task.contentType === "TEXT" ?
+                                    <textarea name="" id="" cols="30" rows="10"
+                                              disabled={!this.props.task.ableToSend}
+                                              value={this.state.homeworkText}
+                                              onChange={this.homeworkHandle.bind(this)}
+                                    >        </textarea>
+                                    : null
+                            }
+
 
                             {
                                 !this.state.commentExist && this.props.task.ableToSend?

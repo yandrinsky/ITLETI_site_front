@@ -58,19 +58,38 @@ export function fetchTaskById(id){
     }
 }
 
-export function setTask(course_id, title, content, status, task_id){
+export function setTask(config){
     //task_id === null, если новое задание, иначе обновление задания
     return async (dispatch, getState) => {
         try{
             console.log("dispatch(setTaskStart())")
             dispatch(setTaskStart())
+            // {course_id, title, content, status, task_id}
             const response = await axios.post('/setTask',
-                {course_id, title, content, status, task_id},
+                {...config},
                 getConfig(getState()),
             )
             console.log("dispatch(setTaskSuccess());")
             dispatch(setTaskSuccess());
 
+        } catch (e) {
+            console.log("error", e)
+            dispatch(fetchTaskError(e.response.data.message))
+        }
+    }
+}
+
+export function deleteTask(task_id){
+    return async (dispatch, getState) => {
+        try{
+            console.log("delete task front", task_id);
+            dispatch(setTaskStart())
+            // {course_id, title, content, status, task_id}
+            const response = await axios.post('/deleteTask',
+                {task_id},
+                getConfig(getState()),
+            )
+            dispatch(setTaskSuccess());
         } catch (e) {
             console.log("error", e)
             dispatch(fetchTaskError(e.response.data.message))

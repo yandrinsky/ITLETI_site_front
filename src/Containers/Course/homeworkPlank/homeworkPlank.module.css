@@ -1,7 +1,7 @@
 .HomeworkPlank{
     padding: 10px;
     background-color: rgba(255,202,40, 0.7);
-    max-width: 600px;
+    width: 600px;
     min-height: 100px;
     text-align: left;
     margin-bottom: 30px;
@@ -21,13 +21,25 @@
 }
 .title{
     font-weight: bold;
-    margin-bottom: 15px;
-    margin-left: 25px;
-    font-size: 16px;
-    color: #263238
+    margin-bottom: 5px;
+    margin-left: 15px;
+    font-size: 18px;
+    color: #263238;
 }
 .description{
     width: 80%;
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+}
+
+.description p strong{
+    font-weight: normal;
+}
+
+.description p{
+    padding: 0;
+    margin: 0;
 }
 
 .close{
@@ -43,4 +55,22 @@
 
 .editBtn:hover{
     color: red;
+}
+
+@media screen and (max-width: 630px){
+    .HomeworkPlank{
+        width: 450px;
+    }
+}
+
+@media screen and (max-width: 470px){
+    .HomeworkPlank{
+        width: 350px;
+    }
+}
+
+@media screen and (max-width: 350px){
+    .HomeworkPlank{
+        width: 320px;
+    }
 }
