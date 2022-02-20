@@ -1,4 +1,5 @@
 import * as React from 'react';
+import css from "./SignIn.module.css"
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -15,14 +16,18 @@ import {withRouter} from "react-router-dom";
 import {NLink} from "../../Components/UI/NLink/Nlink";
 import {connect} from "react-redux";
 
-import {resetRedirect, signIn} from "../../store/actions/auth";
+import {resetRedirect, setVk, signIn} from "../../store/actions/auth";
 import Loader from "../../Components/UI/Loader/Loader";
+import getCookie from "../../cookie/getCookie";
+import {vk_id} from "../../VK/vk";
+
+const VK = window.VK;
 
 function Copyright(props) {
     return (
         <Typography variant="body2" color="text.secondary" align="center" {...props}>
             {'Copyright © '}
-            <Link color="inherit" href="http://localhost:3000/">
+            <Link color="inherit" href="https://itleti.web.app/">
                 IT-LETI
             </Link>{' '}
             {new Date().getFullYear()}
@@ -37,10 +42,17 @@ const theme = createTheme();
 
 class  SignIn extends React.Component{
 
+    constructor(props) {
+        super(props);
+        this.vkSignInRef = React.createRef();
+    }
     state = {
         error: false,
         tryingToSignIn: false,
+        vk: {},
+        vk_session: {},
     }
+
 
     messages(){
         if(this.props.error){
@@ -68,11 +80,13 @@ class  SignIn extends React.Component{
         if (nextProps.needToRedirect && !nextProps.error) {
             resetRedirect();
             nextProps.history.push('/courses');
+        } else if (nextProps.error){
+            resetRedirect()
+            nextProps.history.push('/signUp');
         } else {
-            this.setState({...this.state, tryingToSignIn: false})
+            resetRedirect();
         }
     }
-
 
 
     handleSubmit = (event) => {
@@ -82,12 +96,51 @@ class  SignIn extends React.Component{
         const password = data.get('password');
 
         if(email && password){
-            this.props.signIn(email, password);
+            //this.props.signIn(email, password);
             this.setState({...this.state, tryingToSignIn: true})
         } else {
             this.setState({error: true})
         }
     };
+
+    // VKSignIn(){
+    //     VK.Auth.login((data)=> {
+    //         console.log("VK.Auth.login", data);
+    //         this.setState({...this.state, vk: data.session.user});
+    //         this.setState({...this.state, vk_session: data.session});
+    //         this.props.setVK(data.session.user);
+    //         this.props.signIn({
+    //             vk_id: this.state.vk.id,
+    //             cookie: getCookie("vk_app_" + vk_id),
+    //         });
+    //     }, 1);
+    // }
+
+
+    componentDidMount() {
+        VK.Widgets.Auth('vk_auth', {onAuth: (data) => {
+
+
+                const vk = {
+                    id: data.uid,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    photo_rec: data.photo_rec,
+                    session: data.session,
+                }
+                this.props.setVK(vk);
+                this.setState({...this.state, vk});
+                this.setState({...this.state, vk_session: data.session});
+                this.props.signIn({
+                    vk_id: data.uid,
+                    expire: data.session.expire,
+                    sig: data.session.sig,
+                    sid: data.session.sid,
+                    mid: data.session.mid,
+                    secret: data.session.secret,
+                });
+        }});
+    }
 
     render(){
         return (
@@ -123,54 +176,72 @@ class  SignIn extends React.Component{
                             {/*</Avatar>*/}
                             {this.messages()}
                             <Box component="form" noValidate onSubmit={this.handleSubmit} sx={{ mt: 1 }}>
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    id="email"
-                                    label="Email Address"
-                                    name="email"
-                                    autoComplete="email"
-                                    autoFocus
-                                />
-                                <TextField
-                                    margin="normal"
-                                    required
-                                    fullWidth
-                                    name="password"
-                                    label="Password"
-                                    type="password"
-                                    id="password"
-                                    autoComplete="current-password"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox value="remember" color="primary" />}
-                                    label="Remember me"
-                                />
+                                {/*<TextField*/}
+                                {/*    margin="normal"*/}
+                                {/*    required*/}
+                                {/*    fullWidth*/}
+                                {/*    id="email"*/}
+                                {/*    label="Email Address"*/}
+                                {/*    name="email"*/}
+                                {/*    autoComplete="email"*/}
+                                {/*    autoFocus*/}
+                                {/*/>*/}
+                                {/*<TextField*/}
+                                {/*    margin="normal"*/}
+                                {/*    required*/}
+                                {/*    fullWidth*/}
+                                {/*    name="password"*/}
+                                {/*    label="Password"*/}
+                                {/*    type="password"*/}
+                                {/*    id="password"*/}
+                                {/*    autoComplete="current-password"*/}
+                                {/*/>*/}
+                                {/*<FormControlLabel*/}
+                                {/*    control={<Checkbox value="remember" color="primary" />}*/}
+                                {/*    label="Remember me"*/}
+                                {/*/>*/}
+
+
+                                {/*<div id="vk_auth" ref={this.vkSignInRef} className={css.vk_auth}>*/}
+                                {/*    {VK.Widgets.Auth('vk_auth', {*/}
+                                {/*        onAuth: (data) => {*/}
+                                {/*            console.log("data", data);*/}
+                                {/*        }*/}
+                                {/*    })}*/}
+                                {/*</div>*/}
+
+
+                                {/*{*/}
+                                {/*    !this.state.tryingToSignIn ?*/}
+                                {/*        <Button*/}
+                                {/*            // type="submit"*/}
+                                {/*            fullWidth*/}
+                                {/*            variant="contained"*/}
+                                {/*            sx={{ mt: 3, mb: 2 }}*/}
+                                {/*            onClick={this.VKSignIn.bind(this)}*/}
+                                {/*        >*/}
+                                {/*            Авторизация через ВК*/}
+                                {/*        </Button>*/}
+                                {/*        : <Loader/>*/}
+                                {/*}*/}
+
                                 {
-                                    !this.state.tryingToSignIn ?
-                                        <Button
-                                            type="submit"
-                                            fullWidth
-                                            variant="contained"
-                                            sx={{ mt: 3, mb: 2 }}
-                                        >
-                                            Войти
-                                        </Button>
-                                        : <Loader/>
+                                    this.state.tryingToSignIn ? <Loader/> : null
                                 }
+
+                                <div id="vk_auth"></div>
 
                                 <Grid container>
                                     <Grid item xs>
-                                        <NLink to="#" variant="body2">
-                                            Забыли пароль?
-                                        </NLink>
+                                        {/*<NLink to="#" variant="body2">*/}
+                                        {/*    Забыли пароль?*/}
+                                        {/*</NLink>*/}
                                     </Grid>
-                                    <Grid item>
-                                        <NLink to="/signup" variant="body2">
-                                            {"Нет аккаунта? Зарегистрируйтесь"}
-                                        </NLink>
-                                    </Grid>
+                                    {/*<Grid item>*/}
+                                    {/*    <NLink to="/signup" variant="body2">*/}
+                                    {/*        {"Нет аккаунта? Зарегистрируйтесь"}*/}
+                                    {/*    </NLink>*/}
+                                    {/*</Grid>*/}
                                 </Grid>
                                 <Copyright sx={{ mt: 5 }} />
                             </Box>
@@ -184,8 +255,9 @@ class  SignIn extends React.Component{
 
 function mapDispatchToProps(dispatch){
     return {
-        signIn: (username, password)=>{dispatch(signIn(username, password))},
-        resetRedirect: () => {dispatch(resetRedirect())}
+        signIn: (props)=>{dispatch(signIn(props))},
+        resetRedirect: () => {dispatch(resetRedirect())},
+        setVK: (vk) => {dispatch(setVk(vk))}
     }
 }
 

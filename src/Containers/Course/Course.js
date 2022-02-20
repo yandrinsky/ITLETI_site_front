@@ -21,6 +21,7 @@ import {setHomeworkCourseId, setHomeworkUserStatus} from "../../store/actions/ho
 import MeetingPlank from "./meetingPlank/MeetingPlank";
 import Grade from "../../Components/Grade/Grade";
 import CourseBackground from "./CourseBackground/CourseBackground";
+import {markdown} from "markdown";
 class Course extends Component{
 
 
@@ -123,7 +124,11 @@ class Course extends Component{
             let content;
             if(value === index){
                 if(props.value === 0){
-                    if(!upperThis.props.about) content = <>Пусто</>
+                    if(!upperThis.props.about){
+                        content = <>Пусто</>
+                    } else{
+                        content = <div dangerouslySetInnerHTML={{__html: markdown.toHTML(upperThis.props.about)}}/>;
+                    }
                 } else if(props.value === 1){
                     if(upperThis.props.tasks === null){
                         content = <Loader type="page"/>

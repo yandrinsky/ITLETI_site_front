@@ -60,6 +60,26 @@ export function fetchCourseById(id){
     }
 }
 
+export function fetchAboutCourseById(id){
+    return async (dispatch, getState)=> {
+        const auth = getState().auth
+        const token = auth.token;
+        const config = {
+            headers: {
+                authorization: token,
+            }
+        }
+        dispatch(fetchCoursesStart());
+        try{
+            const course = await axios.get(`/about/${id}`, config);
+            dispatch(fetchCourseSuccess(course.data));
+        } catch (e) {
+            dispatch(fetchCoursesError(e.response.data.message))
+        }
+
+    }
+}
+
 export function fetchCourseTasksById(id){
     return async (dispatch)=> {
         try{

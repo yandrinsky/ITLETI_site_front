@@ -1,0 +1,1 @@
+export const vk_id = 1234567890;

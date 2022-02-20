@@ -30,6 +30,7 @@
 .title{
     text-transform: capitalize;
     cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .data{
@@ -39,6 +40,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: end;
+}
+.data p{
+    margin: 0;
+    margin-bottom: 10px;
 }
 .data button{
     width: 130px;

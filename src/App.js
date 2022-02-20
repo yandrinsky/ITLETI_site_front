@@ -1,7 +1,7 @@
 
 import './App.css';
 import SignIn from "./Containers/SignIn/SignIn";
-import {Route, Switch, withRouter} from "react-router-dom"
+import {Route, Switch, withRouter, Redirect} from "react-router-dom"
 import SignUp from "./Containers/SignUp/SignUp";
 import SwipeableTemporaryDrawer from "./Containers/Main/Main";
 import Layout from "./hoc/Layout/Layout";
@@ -19,11 +19,8 @@ import ERROR from "./Components/Error/ERROR";
 import Homework from "./Containers/Homework/Homewrok";
 import Article from "./Containers/Article/Article";
 import CreateTask from "./Components/CreateTask/CreateTask";
+import CourseAbout from "./Components/CourseAbout/CourseAbout";
 
-export function Redirect(where){
-    const history = useHistory();
-    history.push(where);
-}
 
 class App extends React.Component{
 
@@ -35,10 +32,11 @@ class App extends React.Component{
     render(){
         const initialSwitch = (
             <Switch>
+
                 <Route path={'/signup'} exact component={SignUp} />
                 <Route path={'/signin'} exact component={SignIn} />
                 <Route path={'/courses'} exact component={Courses} />
-                <Route path={'/courses/about_:id'}  component={InDevelopment} />
+                <Route path={'/courses/about_:id'}  component={CourseAbout} />
                 <Route path={'/courses/:id'}  component={Course} />
                 <Route path={'/tasks/:id'}  component={Task} />
                 <Route path={'/logout'} exact component={Logout} />
@@ -46,7 +44,8 @@ class App extends React.Component{
                 <Route path={'/homework'} exact component={Homework} />
                 <Route path={'/setTask/:id'} exact component={CreateTask} />
                 <Route path={'/article'} exact component={Article} />
-                <Route path={'/'} exact component={SwipeableTemporaryDrawer} />
+                {/*<Route path={'/'} exact component={SwipeableTemporaryDrawer} />*/}
+                <Redirect exact from="/" to='/courses'/>
                 <Route component={NotFound}/>
             </Switch>
         )

@@ -33,7 +33,7 @@ class Drawer extends Component{
         }
 
         const links = [
-            {to: '/', label: 'Главная', exact: true},
+            // {to: '/', label: 'Главная', exact: true},
             {to: '/courses', label: 'Курсы', exact: true},
         ]
 

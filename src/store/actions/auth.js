@@ -2,20 +2,21 @@ import axios from "../../axios/auth"
 import {
     AUTH_LOGOUT,
     AUTH_RESET_REDIRECT,
-    AUTH_SET_READY_STAGE,
-    RESET_REDIRECT,
+    AUTH_SET_READY_STAGE, AUTH_SET_VK, AUTH_SET_VK_SESSION,
+    RESET_REDIRECT, RESET_SIGNIN_ERROR,
     SIGNIN_ERROR,
-    SIGNIN_SUCCESS
+    SIGNIN_SUCCESS, TEST_MESSAGE_FAIL, TEST_MESSAGE_SUCCESS
 } from "./actionTypes";
 
 import React from "react";
+import getCookie from "../../cookie/getCookie";
+import {vk_id} from "../../VK/vk";
 
-export function signIn(username, password){
+export function signIn(props){
     return async dispatch => {
         try{
             const {data} = await axios.post("login", {
-                username,
-                password
+                ...props
             })
 
 
@@ -36,19 +37,36 @@ export function signIn(username, password){
     }
 }
 
-export function registration(username, password, group, vk, name, surname){
-    return async (dispatch) => {
+
+
+export function registration(props){
+    return async (dispatch, getState) => {
+        let vk = getState().auth.vk;
         try {
             const {data} = await axios.post("registration", {
-                username,
-                password,
-                group,
-                name,
-                surname,
-                vk,
+                group: props.group,
+                name: props.name,
+                surname: props.surname,
+                vk_id: props.vk_id,
+                vk_link: props.vk_link
             })
 
-            dispatch(signIn(username, password));
+            if(data === true){
+                dispatch(signIn({
+                        vk_id: vk.id,
+                        expire: vk.session.expire,
+                        sig: vk.session.sig,
+                        sid: vk.session.sid,
+                        mid: vk.session.mid,
+                        secret: vk.session.secret,
+                    }
+                ));
+            } else if(data === false){
+                dispatch(testMessageFail());
+            } else {
+                dispatch(signInError("Ошибка регистрации"));
+            }
+
         } catch (e){
             dispatch(signInError(e))
         }
@@ -108,6 +126,7 @@ export function resetRedirect(){
         type: AUTH_RESET_REDIRECT
     }
 }
+
 export function setReadyStage(){
     return {
         type: AUTH_SET_READY_STAGE,
@@ -122,6 +141,18 @@ function signInSuccess(token, roles, name){
     }
 }
 
+function testMessageSuccess(){
+    return {
+        type: TEST_MESSAGE_SUCCESS,
+    }
+}
+
+function testMessageFail(){
+    return {
+        type: TEST_MESSAGE_FAIL,
+    }
+}
+
 function signInError(error){
     return {
         type: SIGNIN_ERROR,
@@ -129,5 +160,24 @@ function signInError(error){
     }
 }
 
+export function resetSignInError(){
+    return {
+        type: RESET_SIGNIN_ERROR,
+    }
+}
+
+export function setVk(vk){
+    return {
+        type: AUTH_SET_VK,
+        vk,
+    }
+}
+
+export function setVkSession(vk_session){
+    return {
+        type: AUTH_SET_VK_SESSION,
+        vk_session,
+    }
+}
 
 

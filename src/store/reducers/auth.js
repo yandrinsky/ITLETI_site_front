@@ -1,9 +1,9 @@
 import {
     AUTH_LOGOUT,
     AUTH_RESET_REDIRECT,
-    AUTH_SET_READY_STAGE,
+    AUTH_SET_READY_STAGE, AUTH_SET_VK, AUTH_SET_VK_SESSION, RESET_SIGNIN_ERROR,
     SIGNIN_ERROR,
-    SIGNIN_SUCCESS
+    SIGNIN_SUCCESS, TEST_MESSAGE_FAIL, TEST_MESSAGE_SUCCESS
 } from "../actions/actionTypes";
 
 
@@ -24,6 +24,9 @@ const initialState = {
     roles: [],
     needToRedirect: false,
     readyStage: false,
+    allowMessages: null,
+    vk: null, //Объект вк (id, name, surname, img///. Устанавливается сразу после авторизации в ВК
+    testMessage: null, //Результат true/false. Получается с сервера, чтобы запросить права на отпраку сообщений
 }
 
 
@@ -38,11 +41,17 @@ export default function authReducer(state = initialState, action){
                 roles: action.roles,
                 needToRedirect: true,
                 error: null,
+                testMessage: null,
             }
         case SIGNIN_ERROR:
             return {
                 ...state,
                 error: action.error,
+            }
+        case RESET_SIGNIN_ERROR:
+            return {
+                ...state,
+                error: null,
             }
         case AUTH_LOGOUT:
             return {
@@ -62,6 +71,26 @@ export default function authReducer(state = initialState, action){
             return {
                 ...state,
                 readyStage: true,
+            }
+        case AUTH_SET_VK:
+            return {
+                ...state,
+                vk: action.vk,
+            }
+        case AUTH_SET_VK_SESSION:
+            return {
+                ...state,
+                vk_session: action.vk_session,
+            }
+        case TEST_MESSAGE_FAIL:
+            return {
+                ...state,
+                testMessage: false,
+            }
+        case TEST_MESSAGE_SUCCESS:
+            return {
+                ...state,
+                testMessage: true,
             }
         default:
             return state

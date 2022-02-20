@@ -9,11 +9,13 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {withRouter} from "react-router-dom";
-import {NLink} from "../../Components/UI/NLink/Nlink";
 import is from "is_js"
 import {connect} from "react-redux";
-import {registration, resetRedirect} from "../../store/actions/auth";
+import {registration, resetRedirect, resetSignInError, signIn} from "../../store/actions/auth";
 import Loader from "../../Components/UI/Loader/Loader";
+import css from "./SignUp.module.css"
+
+const VK = window.VK;
 
 function Copyright(props) {
     return (
@@ -46,7 +48,7 @@ function messages(error, props){
         )
     } else {
         return (
-            <Typography component="h1" variant="h5">
+            <Typography component="h1" variant="h5" className={css.title}>
                 Регистрация аккаунта
             </Typography>
         )
@@ -58,15 +60,65 @@ class SignUp extends React.Component{
     state = {
         error: null,
         tryingToSignUp: false,
+        group: "",
+        email: "",
+    }
+
+    componentDidMount() {
+        this.props.resetSignInError();
+        VK.Widgets.AllowMessagesFromCommunity("vk_send_message", {height: 30}, 206978384);
+        VK.Observer.subscribe("widgets.allowMessagesFromCommunity.allowed", () => {
+            this.props.register({
+                name: this.state.first_name,
+                surname: this.state.last_name,
+                vk_id: this.state.id,
+                vk_link: this.state.link,
+                group: this.state.group,
+            });
+        })
+
+        if(this.props.vk){
+            this.setState({
+                ...this.state,
+                first_name: this.props.vk.first_name,
+                last_name: this.props.vk.last_name,
+                id: this.props.vk.id,
+                link: this.props.vk.href,
+            })
+        }
+
+
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
         if (nextProps.needToRedirect && !nextProps.error) {
             resetRedirect();
             nextProps.history.push('/courses');
+        } else if(nextProps.vk) {
+            this.setState({
+                ...this.state,
+                first_name: this.props.vk.first_name,
+                last_name: this.props.vk.last_name,
+            })
+        } else if(nextProps.testMessage === false){
+
+
         } else {
             this.setState({...this.state, tryingToSignUp: false})
         }
+    }
+
+    handleGroup(e){
+        this.setState({...this.state, error: null, group: e.target.value});
+    }
+    handleName(e){
+        this.setState({...this.state, error: null, first_name: e.target.value});
+    }
+    handleSurname(e){
+        this.setState({...this.state, error: null, last_name: e.target.value});
+    }
+    handleEmail(e){
+        this.setState({...this.state, error: null, email: e.target.value});
     }
 
     handleSubmit = (event) => {
@@ -74,26 +126,20 @@ class SignUp extends React.Component{
         const data = new FormData(event.currentTarget);
         // eslint-disable-next-line no-console
 
-        const email = data.get('email');
-        const password = data.get('password');
+        //const email = data.get('email');
+        //const password = data.get('password');
         const group = data.get('group');
         const name = data.get('name');
         const surname = data.get('surname');
-        const vk = data.get('vk');
+        //const vk = data.get('vk');
 
         let upperThis = this;
         function setError(e){
             upperThis.setState({error: e});
         }
 
-        if(email && password && group && name && surname && vk){
-            if(password.length < 6){
-                setError("Пароль не может быть менее 6 символов");
-                return
-            } else if(!is.email(email)){
-                setError("Почта указана неверно");
-                return;
-            } else if(is.nan(Number(group))){
+        if(group && name && surname){
+            if(is.nan(Number(group))){
                 setError("Группа указана неверно")
                 return;
             } else if(String(group).length !== 4){
@@ -105,15 +151,17 @@ class SignUp extends React.Component{
             } else if(surname.length < 2){
                 setError("Фамилия не может быть менее 2 букв")
                 return;
-            } else if(!is.url(vk)){
-                setError("Ссылка на vk неверна")
-                return;
             }
+
             setError(null);
             this.setState({...this.state, tryingToSignUp: true})
-            this.props.register(email, password, group, vk, name, surname);
-
-
+            this.props.register({
+                name: this.state.first_name,
+                surname: this.state.last_name,
+                vk_id: this.props.vk.id,
+                vk_link: this.props.vk.href,
+                group: this.state.group,
+            });
         } else {
             setError("Заполните все поля");
         }
@@ -131,93 +179,79 @@ class SignUp extends React.Component{
                             alignItems: 'center',
                         }}
                     >
-                        {messages(this.state.error, this.props)}
                         <Box component="form" noValidate onSubmit={this.handleSubmit} sx={{ mt: 3 }}>
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        autoComplete="fname"
-                                        name="name"
-                                        required
-                                        fullWidth
-                                        id="name"
-                                        label="Имя"
-                                        autoFocus
-                                    />
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        id="lastName"
-                                        label="Фамилия"
-                                        name="surname"
-                                        autoComplete="lname"
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        id="email"
-                                        label="Email"
-                                        name="email"
-                                        autoComplete="email"
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        id="group"
-                                        label="Группа"
-                                        name="group"
-                                        autoComplete="email"
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        id="vk"
-                                        label="Ссылка на vk.com"
-                                        name="vk"
-                                        autoComplete="email"
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        required
-                                        fullWidth
-                                        name="password"
-                                        label="Пароль"
-                                        type="password"
-                                        id="password"
-                                        autoComplete="new-password"
-                                    />
-                                </Grid>
-                            </Grid>
-                            {
-                                !this.state.tryingToSignUp ?
-                                    <Button
-                                        type="submit"
-                                        fullWidth
-                                        variant="contained"
-                                        sx={{ mt: 3, mb: 2 }}
-                                    >
-                                        Регистрация
-                                    </Button> :
-                                    <Loader/>
-                            }
+                        {this.props.testMessage === null ? <>
+                            {messages(this.state.error, this.props)}
 
-                            <Grid container justifyContent="flex-end">
-                                <Grid item>
-                                    <NLink to="/signin">
-                                        Уже есть аккаут? Войдите
-                                    </NLink>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            autoComplete="fname"
+                                            name="name"
+                                            required
+                                            fullWidth
+                                            id="name"
+                                            label="Имя"
+                                            autoFocus
+                                            onChange={this.handleName.bind(this)}
+                                            value={this.state.first_name}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            id="lastName"
+                                            label="Фамилия"
+                                            name="surname"
+                                            autoComplete="lname"
+                                            onChange={this.handleSurname.bind(this)}
+                                            value={this.state.last_name}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            id="group"
+                                            label="Группа"
+                                            name="group"
+                                            autoComplete="email"
+                                            onChange={this.handleGroup.bind(this)}
+                                            value={this.state.group}
+                                        />
+                                    </Grid>
+                                    {/*</Grid>*/}
+
+
                                 </Grid>
-                            </Grid>
+                                {
+                                    !this.state.tryingToSignUp ?
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            variant="contained"
+                                            sx={{ mt: 3, mb: 2 }}
+                                        >
+                                            Регистрация
+                                        </Button> :
+                                        <Loader/>
+                                }
+
+                        </>
+                            : null
+                        }
+
+                            <div className={this.props.testMessage === null ? css.hide : css.center}>
+                                <h3>Разрешите отправку сообщений чтобы продолжить регистрацию</h3>
+                                <Grid item xs={12}>
+                                    <div id="vk_send_message" ref={this.vkSignInRef}/>
+                                </Grid>
+                            </div>
+
                         </Box>
+
+
                     </Box>
                 </Container>
             </ThemeProvider>
@@ -228,12 +262,16 @@ class SignUp extends React.Component{
 function mapDispatchToProps(dispatch){
     return {
         register: (username, password, group, vk, name, surname) => dispatch(registration(username, password, group, vk, name, surname)),
+        resetSignInError: () => dispatch(resetSignInError()),
+        signIn: (vk_id) => dispatch(signIn(vk_id)),
     }
 }
 function mapStateToProps(state){
     return {
         error: state.auth.error,
         needToRedirect: state.auth.needToRedirect,
+        vk: state.auth.vk,
+        testMessage: state.auth.testMessage,
     }
 }
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignUp));

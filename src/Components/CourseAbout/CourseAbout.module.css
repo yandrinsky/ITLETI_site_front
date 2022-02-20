@@ -1,5 +1,10 @@
-.Course{
-
+.aboutCourse{
+    padding: 30px;
+    text-align: center;
+    margin: 0 auto;
+    max-width: 600px;
+    font-size: 18px;
+    line-height: 30px;
 }
 
 .header{
