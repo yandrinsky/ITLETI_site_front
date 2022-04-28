@@ -1,10 +1,11 @@
 import axios from "../../axios/courses";
 import {
+    FETCH_COURSES_ERROR,
     FETCH_TASK, FETCH_TASK_ERROR,
-    FETCH_TASK_START, RESET_TASK,
+    FETCH_TASK_START, RESET_FETCH_TASK_ERROR, RESET_TASK,
     SEND_HOMEWORK_ERROR,
     SEND_HOMEWORK_START,
-    SEND_HOMEWORK_SUCCESS, SET_TASK_START, SET_TASK_SUCCESS
+    SEND_HOMEWORK_SUCCESS, SET_COURSE_AUTH_ERROR, SET_TASK_START, SET_TASK_SUCCESS
 } from "./actionTypes";
 
 
@@ -53,7 +54,7 @@ export function fetchTaskById(id){
             }, config)
             dispatch(fetchTask(tasks.data))
         } catch (e) {
-            dispatch(fetchTaskError(e.response.data.message))
+            dispatch(fetchTaskError(e.response.data))
         }
     }
 }
@@ -62,19 +63,17 @@ export function setTask(config){
     //task_id === null, если новое задание, иначе обновление задания
     return async (dispatch, getState) => {
         try{
-            console.log("dispatch(setTaskStart())")
             dispatch(setTaskStart())
             // {course_id, title, content, status, task_id}
             const response = await axios.post('/setTask',
                 {...config},
                 getConfig(getState()),
             )
-            console.log("dispatch(setTaskSuccess());")
             dispatch(setTaskSuccess());
 
         } catch (e) {
             console.log("error", e)
-            dispatch(fetchTaskError(e.response.data.message))
+            dispatch(fetchTaskError(e.response.data))
         }
     }
 }
@@ -82,7 +81,6 @@ export function setTask(config){
 export function deleteTask(task_id){
     return async (dispatch, getState) => {
         try{
-            console.log("delete task front", task_id);
             dispatch(setTaskStart())
             // {course_id, title, content, status, task_id}
             const response = await axios.post('/deleteTask',
@@ -92,7 +90,7 @@ export function deleteTask(task_id){
             dispatch(setTaskSuccess());
         } catch (e) {
             console.log("error", e)
-            dispatch(fetchTaskError(e.response.data.message))
+            dispatch(fetchTaskError(e.response.data))
         }
     }
 }
@@ -103,16 +101,30 @@ export function resetTask(){
     }
 }
 
+export function resetTaskError(){
+    return{
+        type: RESET_FETCH_TASK_ERROR,
+    }
+}
+
 function fetchTaskStart(){
     return{
         type: FETCH_TASK_START
     }
 }
 function fetchTaskError(error){
-    return{
-        type: FETCH_TASK_ERROR,
-        error: error,
+    if(error.code === 1){
+        return {
+            type: SET_COURSE_AUTH_ERROR,
+        }
+    } else {
+        return{
+            type: FETCH_TASK_ERROR,
+            error: error.message,
+        }
     }
+
+
 }
 function fetchTask(task){
     return{

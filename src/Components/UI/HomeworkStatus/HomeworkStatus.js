@@ -7,7 +7,7 @@ import css from "./HomeworkStatus.module.css"
 
 
 
-export default (props)=> {
+export default ({status, ...props})=> {
     let icon;
     let style = {};
 
@@ -19,11 +19,11 @@ export default (props)=> {
         style.color = props.color
     }
 
-    if(props.status === "NOT_CHECKED"){
+    if(status === "NOT_CHECKED"){
         icon = <AccessTimeIcon className={`${css.notCheckedIcon} ${css.icon}`} style={style}/>
-    } else if(props.status === "PASSED"){
+    } else if(status === "PASSED"){
         icon = <DoneIcon className={`${css.passedIcon} ${css.icon}`} style={style}/>
-    } else if(props.status === "FAILED"){
+    } else if(status === "FAILED"){
         icon = <CloseIcon className={`${css.failIcon} ${css.icon}`} style={style}/>
     }
 

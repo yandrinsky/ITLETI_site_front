@@ -2,7 +2,7 @@
     padding: 30px;
     text-align: center;
     margin: 0 auto;
-    max-width: 600px;
+    max-width: 700px;
     font-size: 18px;
     line-height: 30px;
 }
@@ -66,4 +66,17 @@
     font-size: 18px;
     line-height: 30px;
     max-width: 600px;
+}
+
+.warning{
+    color: #ff9100;
+}
+
+.student{
+    color: #4caf50;
+}
+
+.buttonJoin{
+    text-align: center;
+    margin-top: 20px;
 }

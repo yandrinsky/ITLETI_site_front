@@ -6,6 +6,7 @@ export default (props)=> {
     return (
         <div className={css.header} style={{backgroundImage: `url("${server}${props.preview}")`}}>
             <h1>{props.title}</h1>
+            <div className={css.teachers}>{props.teachers}</div>
         </div>
     )
 }

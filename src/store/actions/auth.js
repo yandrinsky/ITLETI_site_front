@@ -1,8 +1,9 @@
 import axios from "../../axios/auth"
 import {
-    AUTH_LOGOUT,
-    AUTH_RESET_REDIRECT,
-    AUTH_SET_READY_STAGE, AUTH_SET_VK, AUTH_SET_VK_SESSION,
+    AUTH_ACTIVE_REDIRECT,
+    AUTH_LOGOUT, AUTH_RESET_LACK_OF_USERNAME,
+    AUTH_RESET_REDIRECT, AUTH_RESET_REDIRECT_TO, AUTH_SET_LACK_OF_USERNAME,
+    AUTH_SET_READY_STAGE, AUTH_SET_REDIRECT_TO, AUTH_SET_VK, AUTH_SET_VK_SESSION,
     RESET_REDIRECT, RESET_SIGNIN_ERROR,
     SIGNIN_ERROR,
     SIGNIN_SUCCESS, TEST_MESSAGE_FAIL, TEST_MESSAGE_SUCCESS
@@ -11,6 +12,7 @@ import {
 import React from "react";
 import getCookie from "../../cookie/getCookie";
 import {vk_id} from "../../VK/vk";
+import {resetCourses} from "./courses";
 
 export function signIn(props){
     return async dispatch => {
@@ -26,13 +28,22 @@ export function signIn(props){
             localStorage.setItem('expirationDate', expirationDate)
             localStorage.setItem('roles', data.roles)
             localStorage.setItem('name', data.name)
+            localStorage.setItem('username', data.username)
 
-
-            dispatch(signInSuccess(data.token, data.roles, data.name))
+            dispatch(signInSuccess(data.token, data.roles, data.name, data.group))
+            dispatch(resetCourses());
             dispatch(autoLogout(data.expiresIn));
 
+            if(!data.username){
+                //console.log("Перенаправить на страницу с логином и паролем");
+                dispatch({type: AUTH_SET_LACK_OF_USERNAME});
+            } else {
+                dispatch({type: AUTH_ACTIVE_REDIRECT});
+
+            }
+
         } catch (e){
-            dispatch(signInError(e))
+            dispatch(signInError(e.response.data.message))
         }
     }
 }
@@ -48,7 +59,9 @@ export function registration(props){
                 name: props.name,
                 surname: props.surname,
                 vk_id: props.vk_id,
-                vk_link: props.vk_link
+                vk_link: props.vk_link,
+                username: props.username,
+                password: props.password,
             })
 
             if(data === true){
@@ -61,6 +74,7 @@ export function registration(props){
                         secret: vk.session.secret,
                     }
                 ));
+                dispatch({type: AUTH_RESET_LACK_OF_USERNAME});
             } else if(data === false){
                 dispatch(testMessageFail());
             } else {
@@ -68,7 +82,7 @@ export function registration(props){
             }
 
         } catch (e){
-            dispatch(signInError(e))
+            dispatch(signInError(e.response.data.message))
         }
 
     }
@@ -78,7 +92,6 @@ export function registration(props){
 export function autoLogin(){
     return async dispatch => {
         const token = localStorage.getItem('token');
-
         if(!token){
             dispatch(logout())
         } else {
@@ -97,7 +110,7 @@ export function autoLogin(){
                     //dispatch(autoLogout((expirationDate.getTime() - new Date().getTime())/ 1000))
                 }
             } catch (e) {
-                dispatch(logout())
+                dispatch(logout());
             }
 
         }
@@ -117,6 +130,7 @@ export function autoLogout(time) {
     return dispatch => {
         setTimeout(() => {
             dispatch(logout());
+            dispatch(resetCourses());
         }, time * 1000)
     }
 }
@@ -132,12 +146,14 @@ export function setReadyStage(){
         type: AUTH_SET_READY_STAGE,
     }
 }
-function signInSuccess(token, roles, name){
+function signInSuccess(token, roles, name, group){
+    console.log("signInSuccess group", group);
     return {
         type: SIGNIN_SUCCESS,
         token,
         name,
-        roles
+        roles,
+        group
     }
 }
 
@@ -170,6 +186,18 @@ export function setVk(vk){
     return {
         type: AUTH_SET_VK,
         vk,
+    }
+}
+
+export function setAuthRedirectTo(redirectTo){
+    return {
+        type: AUTH_SET_REDIRECT_TO,
+        redirectTo,
+    }
+}
+export function resetAuthRedirectTo(){
+    return {
+        type: AUTH_RESET_REDIRECT_TO,
     }
 }
 

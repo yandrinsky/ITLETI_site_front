@@ -11,8 +11,18 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding: 30px;
 }
 .btnWrapper{
     display: inline-block;
     margin-top: 20px;
+}
+
+.iframePattern p{
+    margin-bottom: 0;
+}
+
+.iframePattern input{
+    width: 100%;
+    margin-top: 10px;
 }

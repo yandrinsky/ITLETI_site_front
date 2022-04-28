@@ -2,8 +2,24 @@
     padding: 10px;
     border: 4px solid #FFDA68;
     background-color: transparent;
+    max-width: 800px;
 }
 
 .success{
     color: yellowgreen;
+}
+
+.input{
+    margin-bottom: 15px;
+}
+
+h4{
+    margin-bottom: 0;
+}
+.inputLabel{
+    margin-bottom: 0;
+}
+
+.input_wrapper{
+    margin-bottom: 15px;
 }

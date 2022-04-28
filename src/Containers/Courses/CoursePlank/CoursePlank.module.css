@@ -30,7 +30,14 @@
 .title{
     text-transform: capitalize;
     cursor: pointer;
+    margin-top: 0;
     margin-bottom: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    width: 100%;
 }
 
 .data{
@@ -63,5 +70,17 @@
 @media (max-width: 450px) {
     .data{
         font-size: 14px;
+    }
+}
+
+@media (max-width: 450px) {
+    .data{
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 410px) {
+    .data{
+        font-size: 12px;
     }
 }

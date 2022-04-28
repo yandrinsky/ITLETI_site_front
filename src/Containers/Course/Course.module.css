@@ -43,15 +43,6 @@
     padding: 10px;
 }
 
-.editMeeting{
-    display: flex;
-    flex-direction: column;
-}
-
-.editMeeting textarea{
-    resize: none;
-}
-
 .teacherPannel{
     display: flex;
     flex-direction: column;
@@ -61,4 +52,18 @@
     font-size: 18px;
     line-height: 30px;
     max-width: 600px;
+}
+
+.aboutCourse{
+    padding: 30px;
+    text-align: center;
+    margin: 0 auto;
+    max-width: 700px;
+    font-size: 18px;
+    line-height: 30px;
+}
+
+.teacherInfo{
+    margin: 0;
+    margin-bottom: 10px;
 }

@@ -1,31 +1,46 @@
 import {
     COURSE_UPDATE_MEETING,
     COURSES_RESET_COURSE,
+    COURSES_RESET_COURSES,
     COURSES_RESET_ERROR,
     COURSES_RESET_REDIRECT,
     FETCH_COURSE_SUCCESS,
     FETCH_COURSES_ERROR,
     FETCH_COURSES_START,
-    FETCH_COURSES_SUCCESS, FETCH_MEETING_START,
+    FETCH_COURSES_SUCCESS, FETCH_MEETING_END,
+    FETCH_MEETING_START,
     FETCH_TASK,
     FETCH_TASK_START,
-    FETCH_TASKS, GRADE_MEETING_START, GRADE_MEETING_SUCCESS,
-    JOIN_COURSE_SUCCESS, SEND_HOMEWORK_ERROR,
+    FETCH_TASKS,
+    GRADE_MEETING_START,
+    GRADE_MEETING_SUCCESS,
+    JOIN_COURSE_SUCCESS,
+    RESET_COURSE_AUTH_ERROR,
+    RESET_COURSE_MEETING, RESET_COURSE_STATS,
+    SEND_HOMEWORK_ERROR,
     SEND_HOMEWORK_START,
-    SEND_HOMEWORK_SUCCESS, SET_GRADE_MEETING,
+    SEND_HOMEWORK_SUCCESS,
+    SET_COURSE_AUTH_ERROR,
+    SET_COURSE_MEETING,
+    SET_COURSE_MEETINGS,
+    SET_COURSE_STATS,
+    SET_GRADE_MEETING,
 } from "../actions/actionTypes";
 import {logout} from "../actions/auth";
 
 const initialState = {
-    courses: [],
+    courses: null,
     course: null,
-    loading: true,
+    loading: false,
     error: null,
+    authError: null,
     redirectTo: null,
     tasks: null,
     meetings: null,
+    meeting: null,
     grade: null,
     gradeLoading: false,
+    courseStats: null,
 }
 
 export default function coursesReducer(state = initialState, action){
@@ -33,7 +48,8 @@ export default function coursesReducer(state = initialState, action){
         case FETCH_COURSES_START:
             return  {
                 ...state,
-                loading: true,
+                loading: false,
+                error: false,
             }
         case FETCH_COURSES_ERROR:
             return  {
@@ -54,6 +70,9 @@ export default function coursesReducer(state = initialState, action){
                 loading: false,
                 tasks: null,
                 course: action.course,
+                meetings: null,
+                meeting: null,
+                error: null,
             }
         case FETCH_TASKS:
             return {
@@ -83,11 +102,23 @@ export default function coursesReducer(state = initialState, action){
                 grade: null,
                 gradeLoading: false,
                 tasks: null,
+                meetings: null,
+                meeting: null,
+            }
+        case COURSES_RESET_COURSES:
+            return {
+                ...state,
+                courses: null,
             }
         case FETCH_MEETING_START:
             return {
                 ...state,
                 loading: true
+            }
+        case FETCH_MEETING_END:
+            return {
+                ...state,
+                loading: false,
             }
         case COURSE_UPDATE_MEETING:
             const course = {...state.course};
@@ -113,6 +144,42 @@ export default function coursesReducer(state = initialState, action){
                 grade: null,
                 gradeLoading: false,
             }
+        case SET_COURSE_MEETINGS:
+            return {
+                ...state,
+                meetings: action.meetings,
+            }
+        case SET_COURSE_MEETING:
+            return {
+                ...state,
+                meeting: action.meeting,
+            }
+        case RESET_COURSE_MEETING:
+            return {
+                ...state,
+                meeting: null,
+            }
+        case SET_COURSE_AUTH_ERROR:
+            return {
+                ...state,
+                authError: true,
+            }
+        case RESET_COURSE_AUTH_ERROR:
+            return {
+                ...state,
+                authError: false,
+            }
+        case SET_COURSE_STATS:
+            return {
+                ...state,
+                courseStats: action.courseStats,
+            }
+        case RESET_COURSE_STATS:
+            return {
+                ...state,
+                courseStats: null,
+            }
+
         default:
             return state
     }

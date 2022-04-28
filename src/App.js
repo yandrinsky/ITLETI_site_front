@@ -16,10 +16,13 @@ import {autoLogin, setReadyStage} from "./store/actions/auth";
 import Course from "./Containers/Course/Course";
 import Task from "./Containers/Task/Task";
 import ERROR from "./Components/Error/ERROR";
-import Homework from "./Containers/Homework/Homewrok";
+import Homework from "./Containers/CheckHomework/CheckHomewrok";
 import Article from "./Containers/Article/Article";
 import CreateTask from "./Components/CreateTask/CreateTask";
 import CourseAbout from "./Components/CourseAbout/CourseAbout";
+import Stats from "./Containers/Stats/Stats";
+import Meeting from "./Containers/Meeting/Meeting";
+import MeetingSignUp from "./Containers/MeetingSignUp/MeetingSignUp";
 
 
 class App extends React.Component{
@@ -36,7 +39,7 @@ class App extends React.Component{
                 <Route path={'/signup'} exact component={SignUp} />
                 <Route path={'/signin'} exact component={SignIn} />
                 <Route path={'/courses'} exact component={Courses} />
-                <Route path={'/courses/about_:id'}  component={CourseAbout} />
+                <Route path={'/courses/about/:id'}  component={CourseAbout} />
                 <Route path={'/courses/:id'}  component={Course} />
                 <Route path={'/tasks/:id'}  component={Task} />
                 <Route path={'/logout'} exact component={Logout} />
@@ -44,6 +47,9 @@ class App extends React.Component{
                 <Route path={'/homework'} exact component={Homework} />
                 <Route path={'/setTask/:id'} exact component={CreateTask} />
                 <Route path={'/article'} exact component={Article} />
+                <Route path={'/stats/:id'} exact component={Stats} />
+                <Route path={'/meeting/signup/:id'} exact component={MeetingSignUp} />
+                <Route path={'/meeting/:id'} exact component={Meeting} />
                 {/*<Route path={'/'} exact component={SwipeableTemporaryDrawer} />*/}
                 <Redirect exact from="/" to='/courses'/>
                 <Route component={NotFound}/>

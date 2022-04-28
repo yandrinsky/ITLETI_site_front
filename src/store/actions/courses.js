@@ -2,17 +2,27 @@ import axios from "../../axios/courses";
 import {
     COURSE_UPDATE_MEETING,
     COURSES_RESET_COURSE,
+    COURSES_RESET_COURSES,
     COURSES_RESET_ERROR,
     COURSES_RESET_REDIRECT,
     FETCH_COURSE_SUCCESS,
     FETCH_COURSES_ERROR,
     FETCH_COURSES_START,
-    FETCH_COURSES_SUCCESS, FETCH_MEETING_START,
-    FETCH_TASKS, GRADE_MEETING_START, GRADE_MEETING_SUCCESS,
+    FETCH_COURSES_SUCCESS, FETCH_MEETING_END,
+    FETCH_MEETING_START,
+    FETCH_TASKS,
+    GRADE_MEETING_START,
+    GRADE_MEETING_SUCCESS,
     JOIN_COURSE_SUCCESS,
+    RESET_COURSE_AUTH_ERROR,
+    RESET_COURSE_MEETING, RESET_COURSE_STATS,
+    SET_COURSE_AUTH_ERROR,
+    SET_COURSE_MEETING,
+    SET_COURSE_MEETINGS, SET_COURSE_STATS,
     SET_GRADE_MEETING
 } from "./actionTypes";
-import {resetError} from "./error";
+import {resetError, setError} from "./error";
+import {setMeetingError} from "./meeting";
 
 
 function getConfig(state){
@@ -35,26 +45,54 @@ export function fetchCourses(){
             });
             dispatch(fetchCoursesSuccess(courses.data));
         } catch (e) {
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
+        }
+    }
+}
+
+export function fetchCourseMeetings(course_id){
+    return async (dispatch, getState)=> {
+        const config = getConfig(getState());
+        try{
+            const {data} = await axios.post(
+                "/getMeetings",
+                {course_id},
+                config
+            );
+            dispatch(setCourseMeetings(data));
+        } catch (e) {
+            dispatch(fetchCoursesError(e.response.data))
+        }
+    }
+}
+
+export function fetchCourseMeeting(meeting_id, course_id){
+    return async (dispatch, getState)=> {
+        const config = getConfig(getState());
+        try{
+            dispatch(resetCourseMeeting());
+            const {data} = await axios.post(
+                "/getMeeting",
+                {meeting_id, course_id},
+                config
+            );
+            dispatch(setCourseMeeting(data));
+        } catch (e) {
+            dispatch(fetchCoursesError(e.response.data))
         }
     }
 }
 
 export function fetchCourseById(id){
     return async (dispatch, getState)=> {
-        const auth = getState().auth
-        const token = auth.token;
-        const config = {
-            headers: {
-                authorization: token,
-            }
-        }
+        const config = getConfig(getState());
         dispatch(fetchCoursesStart());
         try{
             const course = await axios.get(`/${id}`, config);
             dispatch(fetchCourseSuccess(course.data));
         } catch (e) {
-            dispatch(fetchCoursesError(e.response.data.message))
+            console.log("fetchCourseById error", e);
+            dispatch(fetchCoursesError(e.response.data))
         }
 
     }
@@ -62,19 +100,13 @@ export function fetchCourseById(id){
 
 export function fetchAboutCourseById(id){
     return async (dispatch, getState)=> {
-        const auth = getState().auth
-        const token = auth.token;
-        const config = {
-            headers: {
-                authorization: token,
-            }
-        }
+        const config = getConfig(getState())
         dispatch(fetchCoursesStart());
         try{
             const course = await axios.get(`/about/${id}`, config);
             dispatch(fetchCourseSuccess(course.data));
         } catch (e) {
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
 
     }
@@ -89,30 +121,11 @@ export function fetchCourseTasksById(id){
             dispatch(fetchTasks(tasks.data.tasks))
         } catch (e) {
 
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
     }
 }
 
-
-// export function fetchTaskById(id){
-//     return async (dispatch, getState)=> {
-//         try{
-//             const token = getState().auth.token;
-//             const config = {
-//                 headers: {
-//                     authorization: token,
-//                 }
-//             }
-//             const tasks = await axios.post(`/getTask`, {
-//                 task_id: id,
-//             }, config)
-//             dispatch(fetchTask(tasks.data))
-//         } catch (e) {
-//             dispatch(fetchCoursesError(e.response.data.message))
-//         }
-//     }
-// }
 
 export function joinCourse(id){
     return async (dispatch, getState) => {
@@ -130,12 +143,12 @@ export function joinCourse(id){
                 config)
             dispatch(joinSuccess(id));
         } catch (e){
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
     }
 }
 
-export function setMeeting(course_id, title, content){
+export function setMeeting(course_id, title, content, CQ, CQ_title, CQ_answer, link){
     return async (dispatch, getState) => {
         try {
             dispatch(fetchMeetingStart());
@@ -143,14 +156,13 @@ export function setMeeting(course_id, title, content){
                 {
                     course_id,
                     title,
-                    content
-
+                    content, CQ, CQ_title, CQ_answer, link
                 },
                 getConfig(getState()))
             dispatch(updateCourseMeeting(response.data.meeting))
 
         } catch (e){
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
     }
 }
@@ -167,24 +179,31 @@ export function stopMeeting(course_id){
             dispatch(updateCourseMeeting(response.data.meeting))
 
         } catch (e){
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
     }
 }
 
-export function signupForMeeting(course_id){
+export function signupForMeeting(course_id, answer){
     return async (dispatch, getState) => {
         try {
             dispatch(fetchMeetingStart());
             const response = await axios.post('/signupForMeeting',
                 {
-                    course_id: course_id,
+                    course_id,
+                    answer,
                 },
                 getConfig(getState()))
             dispatch(updateCourseMeeting(response.data.meeting))
 
         } catch (e){
-            dispatch(fetchCoursesError(e.response.data.message))
+            console.log("error", e.response.data);
+            if(e.response.data.code === 41){
+                dispatch(fetchMeetingEnd());
+                dispatch(setMeetingError(41));
+            } else {
+                dispatch(fetchCoursesError(e.response.data));
+            }
         }
     }
 }
@@ -221,7 +240,7 @@ export function shouldGradeMeeting(course_id){
             )
             dispatch(setGradeMeeting(response.data.grade));
         } catch (e) {
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
 
     }
@@ -238,27 +257,44 @@ export function gradeMeeting(course_id, mark, comment){
             dispatch(gradeMeetingSuccess());
         } catch (e) {
             console.log("error", e)
-            dispatch(fetchCoursesError(e.response.data.message))
+            dispatch(fetchCoursesError(e.response.data))
         }
 
     }
 }
 
-// export function setTask(course_id, title, content, task_id){
-//     //task_id === null, если новое задание, иначе обновление задания
-//     return async (dispatch, getState) => {
-//         try{
-//             const response = await axios.post('/setTask',
-//                 {course_id, title, content, task_id},
-//                 getConfig(getState()),
-//             )
-//             dispatch(gradeMeetingSuccess());
-//         } catch (e) {
-//             console.log("error", e)
-//             dispatch(fetchCoursesError(e.response.data.message))
-//         }
-//     }
-// }
+export function fetchCourseStats(course_id){
+    return async (dispatch, getState) => {
+        try{
+            const response = await axios.post('/courseStats',
+                {course_id},
+                getConfig(getState()),
+            )
+            console.log("stats: ", response.data.stats);
+            dispatch(setCourseStats(response.data.stats));
+        } catch (e) {
+            if(e.response.data.code === 1){
+                //dispatch(auth(e.response.data.message))
+            }
+            console.log("bad stats: ", e.response.data);
+            dispatch(setError(e.response.data.message))
+        }
+
+    }
+}
+
+function setCourseStats(courseStats){
+    return {
+        type: SET_COURSE_STATS,
+        courseStats,
+    }
+}
+
+export function resetCourseStats(){
+    return {
+        type: RESET_COURSE_STATS,
+    }
+}
 
 export function resetRedirect(){
     return {
@@ -276,6 +312,12 @@ export function resetCourse(){
 export function resetCoursesError(){
     return{
         type: COURSES_RESET_ERROR,
+    }
+}
+
+export function resetCourses(){
+    return{
+        type: COURSES_RESET_COURSES,
     }
 }
 
@@ -305,10 +347,22 @@ function fetchCoursesStart(){
     }
 }
 
-function fetchCoursesError(error){
+export function resetAuthError(){
     return {
-        type: FETCH_COURSES_ERROR,
-        error,
+        type: RESET_COURSE_AUTH_ERROR,
+    }
+}
+
+function fetchCoursesError(error){
+    if(error.code === 1){
+        return {
+            type: SET_COURSE_AUTH_ERROR,
+        }
+    } else {
+        return {
+            type: FETCH_COURSES_ERROR,
+            error: error.message,
+        }
     }
 }
 
@@ -365,6 +419,26 @@ function fetchTasks(tasks){
 //     }
 // }
 
+function setCourseMeetings(meetings){
+    return {
+        type: SET_COURSE_MEETINGS,
+        meetings,
+    }
+}
+
+function setCourseMeeting(meeting){
+    return {
+        type: SET_COURSE_MEETING,
+        meeting,
+    }
+}
+
+function resetCourseMeeting(){
+    return {
+        type: RESET_COURSE_MEETING,
+    }
+}
+
 function updateCourseMeeting(meeting){
     return {
         type: COURSE_UPDATE_MEETING,
@@ -373,8 +447,12 @@ function updateCourseMeeting(meeting){
 }
 
 function fetchMeetingStart(){
-    console.log("fetchMeetingStart")
     return {
         type: FETCH_MEETING_START,
+    }
+}
+function fetchMeetingEnd(){
+    return {
+        type: FETCH_MEETING_END,
     }
 }

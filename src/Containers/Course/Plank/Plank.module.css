@@ -1,0 +1,80 @@
+.Plank{
+    padding: 10px;
+    background-color: rgba(255,202,40, 0.7);
+    width: 600px;
+    min-height: 100px;
+    text-align: left;
+    margin-bottom: 30px;
+    font-family: "Montserrat", sans-serif;
+    cursor: pointer;
+    box-shadow: 5px 5px 5px 0 rgba(84,110,122, 0.5);
+    transition: all 0.2s ease-in;
+    position: relative;
+}
+.Plank:hover{
+    transform: scale(1.02);
+    box-shadow: 12px 12px 5px 0 rgba(84,110,122, 0.5);
+    transition: all 0.2s ease-in;
+}
+.Plank:hover .editBtn{
+    display: initial;
+}
+.title{
+    font-weight: bold;
+    margin-bottom: 5px;
+    margin-left: 15px;
+    font-size: 18px;
+    color: #263238;
+}
+.description{
+    width: 80%;
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+}
+
+.description p strong{
+    font-weight: normal;
+}
+
+.description p{
+    padding: 0;
+    margin: 0;
+}
+
+.close{
+    background-color: #cfd8dc !important;
+}
+
+.editBtn{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.editBtn:hover{
+    color: red;
+}
+.date{
+    position: absolute;
+    top: 5px;
+    right: 25px;
+}
+
+@media screen and (max-width: 630px){
+    .Plank{
+        width: 450px;
+    }
+}
+
+@media screen and (max-width: 470px){
+    .Plank{
+        width: 350px;
+    }
+}
+
+@media screen and (max-width: 350px){
+    .Plank{
+        width: 320px;
+    }
+}

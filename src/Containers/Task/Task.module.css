@@ -43,12 +43,17 @@
 
 .comments{
     padding-left: 30px;
+    width: 100%;
 }
 
 .currentComment{
     position: relative;
     margin-left: 30px;
-    max-width: 400px;
+    max-width: 100%;
+}
+
+.currentComment::placeholder{
+    color: black;
 }
 
 hr{
@@ -92,4 +97,9 @@ hr{
 .hmwStatus{
     display: flex;
     justify-content: center;
+}
+
+.Textarea{
+    width: 100%;
+    min-height: 300px;
 }

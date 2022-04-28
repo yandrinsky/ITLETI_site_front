@@ -1,0 +1,8 @@
+.editMeeting{
+    display: flex;
+    flex-direction: column;
+}
+
+.editMeeting textarea{
+    resize: none;
+}

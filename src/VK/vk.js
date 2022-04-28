@@ -1,1 +1,1 @@
-export const vk_id = 1234567890;
+export const vk_id = 8083625;

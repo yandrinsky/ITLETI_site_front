@@ -11,7 +11,9 @@ import Button from "../UI/Button/Button";
 import {deleteTask, fetchTaskById, resetTask, setTask} from "../../store/actions/task";
 import Loader from "../UI/Loader/Loader";
 import Select from "../UI/Select/Select";
-
+import Popup from "../UI/Popup/Popup";
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 //Интерфейст создания нового ДЗ
 function CreateTask (props){
@@ -32,28 +34,15 @@ function CreateTask (props){
     const [sent, setSent] = useState(false);
     const [resource, setResource] = useState(undefined);
     const [isExistTask, setIsExistTask] = useState(false);
-    const [state, setState] = useState({
-        title: "",
-        outputTitle: "",
-        initFetch: true,
-        input: "",
-        output: "",
-        courseId: "",
-        taskId: "",
-        status: "OPEN",
-        contentType: "TEXT",
-        lang: "JS",
-        isFrame: "TRUE",
-        frameOption: "",
-        sent: "false",
-        resource: undefined,
-        isExistTask: false,
-    })
+    const [tryingToSend, setTryingToSend] = useState(false);
+    const [popupCreate, setPopupCreate] = useState(false);
+    const [popupDelete, setPopupDelete] = useState(false);
 
     let availableResources = [
         {title: "Google Docs", value: "GOOGLE", template: undefined,},
         {title: "JDoodle", value: "JDOODLE", template: undefined,},
         {title: "JSFiddle", value: "JSFIDDLE", template: "$/embedded/"},
+        {title: "CodePen", value: "CODEPEN", template: "$.REPLACE(/pen/, /embed/)?default-tab=html%2Cresult"},
         {title: "Моего варианта нет", value: "CUSTOM", template: undefined,}
     ]
 
@@ -83,32 +72,16 @@ function CreateTask (props){
 
     useEffect(()=> {
         if(props.task){
-            console.log("CreatTask props.task", props.task);
             setIsExistTask(true);
-            // const {title, content, status, contentType, type, isFrame, frameOption}
             handleTitle(props.task.title)
             handleContent(props.task.content)
             handleStatus(props.task.status)
             handleContentType(props.task.contentType)
             handleType(props.task.type)
-            //setType(props.task.type)
-            // console.log("state", state);
-            // let type = props.task.type;
-            // setState({...state, type});
 
             setIsFrame(props.task.frame || false);
             setFrameOption(props.task.frameOption || "");
             setResource(props.task.resource);
-            // setType(props.type)
-            // setContentType(props.contentType)
-            //setLang(props.lang || "JS")
-            console.log("Title", title);
-            console.log("Content", input);
-            console.log("Status", status);
-            console.log("ContentType", contentType, props.task.contentType);
-            console.log("Type", type, props.task.type);
-            console.log("frame", isFrame);
-            console.log("frameOption", frameOption);
         }
 
     }, [props.task])
@@ -146,10 +119,12 @@ function CreateTask (props){
     }
 
     function handleStatus(value){
-        let status = value;
-        setStatus(status);
+        setStatus(value);
     }
     function handleType(value){
+        if(value === "TASK"){
+            setStatus("OPEN")
+        }
         setType(value);
     }
 
@@ -163,8 +138,6 @@ function CreateTask (props){
             e.preventDefault();
             let start = e.target.selectionStart;
             let end = e.target.selectionEnd;
-            // console.log("start, end", start, end)
-            // console.log("1 part, 2 part", e.target.value.substring(0, start), e.target.value.substring(end))
             const input = e.target.value.substring(0, start) + "\t" + e.target.value.substring(end);
             setInput(input)
             setOutput(markdown.toHTML(input))
@@ -175,8 +148,31 @@ function CreateTask (props){
     }
     function handleResource(e){
         setResource(e.target.value);
-        let curResource = availableResources.filter(item => item.value === e.target.value.value);
+        let curResource = availableResources.filter(item => item.value === e.target.value)[0];
         setFrameOption(curResource.template)
+    }
+
+    function handleCreate(){
+        props.setTask({
+            course_id: courseId,
+            title,
+            status,
+            task_id: taskId,
+            content: input,
+            lang: contentType === "CODE" ? lang : undefined,
+            type,
+            contentType,
+            isFrame: contentType === "LINK" ? isFrame : undefined,
+            resource: contentType === "LINK" && isFrame ? resource : undefined,
+            frameOption: contentType === "LINK" && isFrame ? frameOption : undefined,
+        });
+        setSent(true);
+    }
+
+    function handleDelete(){
+        props.deleteTask(taskId);
+        setTryingToSend(true);
+        setSent(true);
     }
 
     return (
@@ -189,13 +185,13 @@ function CreateTask (props){
                     />
 
                     <form className={css.wrapper} onSubmit={(e)=> e.preventDefault()}>
-                        <p>Назание работы</p>
+                        <h3>Назание работы</h3>
                         <input type="text" placeholder="title" value={title}
                                onInput={(e)=> handleTitle(e.target.value)}
                         />
                         <hr/>
 
-                        <p>Тип работы</p>
+                        <h3>Тип работы</h3>
                         <select name="type" id="" value={type}
                                 onChange={(e)=> handleType(e.target.value)}
                         >
@@ -204,15 +200,20 @@ function CreateTask (props){
                         </select>
                         <hr/>
 
-                        <p>Статус работы</p>
-                        <select name="status" id="" value={status}
-                                onChange={(e)=> handleStatus(e.target.value)}
-                        >
-                            <option value="OPEN">Открыто</option>
-                            <option value="CLOSE">Закрыто</option>
-                        </select>
-                        <hr/>
-                        <p>Тип ответа</p>
+                        {
+                            type !== "TASK" ? <>
+                                <h3>Статус работы</h3>
+                                <select name="status" id="" value={status}
+                                        onChange={(e)=> handleStatus(e.target.value)}
+                                >
+                                    <option value="OPEN">Открыто</option>
+                                    <option value="CLOSE">Закрыто</option>
+                                </select>
+                                <hr/>
+                            </> : null
+                        }
+
+                        <h3>Тип ответа</h3>
                         <select name="contentType" id="" value={contentType}
                                 onChange={(e)=> handleContentType(e.target.value)}
                         >
@@ -250,7 +251,7 @@ function CreateTask (props){
                         {
                             contentType === "LINK" && isFrame ?
                                 <>
-                                    <p>Выберите ресурс</p>
+                                    <h3>Выберите ресурс</h3>
                                     <Select options={availableResources}
                                             value={resource}
                                             onChange={handleResource}
@@ -260,14 +261,18 @@ function CreateTask (props){
                         }
                         {
                             contentType === "LINK" && isFrame && resource === "CUSTOM" ?
-                                <>
+                                <div className={css.iframePattern}>
                                     <hr/>
-                                    <p>Укажите шаблон для открытия frame</p>
+                                    <h3>Укажите шаблон для открытия frame</h3>
                                     <p>Пример: $/embedded/</p>
                                     <p>Вместо $ будет подставлена ссылка, отправленная учеником</p>
+                                    <p>Доступные методы: </p>
+                                    <ul>
+                                        <li>$.REPLACE(/pen/, /embed/) - замена</li>
+                                    </ul>
                                     <p><i>Если шаблонизация не требуется, оставьте строку пустой</i></p>
                                     <input type="text" value={frameOption} onInput={e => setFrameOption(e.target.value)}/>
-                                </>
+                                </div>
                             : null
                         }
                         <hr/>
@@ -276,40 +281,31 @@ function CreateTask (props){
                                   value={input} onKeyDown={handleTab}
                                   onInput={(e) => handleContent(e.target.value)}/>
                         <hr/>
-                        {/*<div className={css.final} >{this.state.output}</div>*/}
+
+
+
                         <div className={`${css.final} ${markCss["markdown-body"]}`}
                              dangerouslySetInnerHTML={{__html: outputTitle}}
                         />
-                        <div className={`${css.final} ${markCss["markdown-body"]}`}
-                             dangerouslySetInnerHTML={{__html: output}}
-                        />
+                        <ReactMarkdown children={input} className={`${css.final} ${markCss["markdown-body"]}`} remarkPlugins={[remarkGfm]}/>
+
+                        {/*<div className={`${css.final} ${markCss["markdown-body"]}`}*/}
+                        {/*     dangerouslySetInnerHTML={{__html: output}}*/}
+                        {/*/>*/}
+
+
+
+                        {/*<ReactMarkdown remarkPlugins={[remarkGfm]} children={input}/>*/}
+
                         <div className={css.btnWrapper}>
                             {
-                                props.sent && props.loading ? <Loader/> :
+                                sent && props.loading && !tryingToSend ? <Loader/> :
                                     <>
                                         <Button type="primary" disabled={!title || !input}
-                                                onClick={ () => {
-                                                    props.setTask({
-                                                        course_id: courseId,
-                                                        title,
-                                                        status,
-                                                        task_id: taskId,
-                                                        content: input,
-                                                        lang: contentType === "CODE" ? lang : undefined,
-                                                        type,
-                                                        contentType,
-                                                        isFrame: contentType === "LINK" ? isFrame : undefined,
-                                                        resource: contentType === "LINK" && isFrame ? resource : undefined,
-                                                        frameOption: contentType === "LINK" && isFrame ? frameOption : undefined,
-                                                    });
-                                                    setSent(true);
-                                                }}
+                                                onClick={()=> setPopupCreate(true)}
                                         >{taskId ? "Изменить" : "Задать"}</Button>
                                         {isExistTask ?
-                                            <Button type="fail" onClick={()=> {
-                                                props.deleteTask(taskId);
-                                                setSent(true);
-                                            }}>Удалить задачу</Button>
+                                            <Button type="fail" onClick={() => setPopupDelete(true)}>Удалить задачу</Button>
                                             : null
                                         }
                                     </>
@@ -319,7 +315,34 @@ function CreateTask (props){
 
                         </div>
                     </form>
+                    {/*Настраваемый попап на изменение, создание и удаление дз*/}
+                    {popupCreate || popupDelete ?
+                        <Popup open={popupCreate || popupDelete} onAccept={popupCreate ? handleCreate : handleDelete} onDeny={() => {
+                                setPopupCreate(false)
+                                setPopupDelete(false)
+                            }
+                        } type={popupDelete ? "warning" : ""}>
+                            <h1>
+                                {popupCreate && taskId ? "Обновление дз" : popupCreate && !taskId ? "Создание дз" : popupDelete ? "Удаление дз" : null}
+                            </h1>
+                            {popupCreate ? <>
+                                    {
+                                        taskId ? <>
+                                            <p>Это дейсвие может повлиять на проверку ранее сданных работ</p>
+                                        </> : <>
+                                            <p>Это действие приведёт к отправке уведомлений всем участникам курса</p>
+                                            <p><em>Домашнее задание можно удалить</em></p>
+                                        </>
+                                    }
+                                </> : <>
+                                    <p>Это действие приведёт к удалению дз, всех работ и комментариев, связанных с ним</p>
+                                    <p><em>Это действие отменить нельзя</em></p>
+                                </>
 
+                            }
+
+                        </Popup> : null
+                    }
                 </div>
             }
 

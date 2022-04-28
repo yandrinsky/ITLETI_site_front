@@ -1,0 +1,50 @@
+.dark{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: rgba(0,0,0, 0.5);
+    z-index: 1000;
+}
+
+.Popup_wrapper{
+    padding: 10px;
+}
+
+.Popup{
+    width: 450px;
+    padding: 15px;
+    text-align: center;
+    background-color: #fff;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 3px solid #2884f6;
+    z-index: 1001;
+}
+
+.Popup h1,
+.Popup h2,
+.Popup h3,
+.Popup h4,
+.Popup h5 {
+    margin-top: 0;
+}
+.Popup_close{
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.Popup.warning{
+    border: 3px solid #f0576c;
+}
+
+@media screen and (max-width: 450px){
+    .Popup{
+        width: 95%;
+    }
+}

@@ -1,0 +1,17 @@
+.mark{
+    padding: 0;
+    margin: 0;
+}
+
+.title{
+    margin: 20px 0;
+    text-align: center;
+}
+
+.mainTitle{
+    margin-left: 20px;
+}
+
+.Stats{
+    padding: 30px 30px 100px;
+}

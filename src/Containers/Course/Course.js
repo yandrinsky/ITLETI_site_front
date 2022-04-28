@@ -1,10 +1,10 @@
-import React, {Component} from "react"
+import React, {Component, useEffect, useState} from "react"
 import css from "./Course.module.css"
 import {server} from "../../axios/server";
 import {connect} from "react-redux";
 import {
-    fetchCourseById,
-    fetchCourseTasksById, gradeMeeting,
+    fetchCourseById, fetchCourseMeeting, fetchCourseMeetings,
+    fetchCourseTasksById, gradeMeeting, resetAuthError,
     resetCourse,
     resetCoursesError,
     setMeeting, shouldGradeMeeting, signupForMeeting, stopMeeting
@@ -21,48 +21,19 @@ import {setHomeworkCourseId, setHomeworkUserStatus} from "../../store/actions/ho
 import MeetingPlank from "./meetingPlank/MeetingPlank";
 import Grade from "../../Components/Grade/Grade";
 import CourseBackground from "./CourseBackground/CourseBackground";
+import markCss from "../../markdown/Markdown.module.css";
 import {markdown} from "markdown";
-class Course extends Component{
+import prepTeachersNames from "./auxiliary/prepTeachersNames";
+import LessonPlank from "./lessonPlank/LessonPlank";
+import Plank from "./Plank/Plank";
+import StartMeetingPlank from "./StartMeetingPlank/StartMeetingPlank";
+import Popup from "../../Components/UI/Popup/Popup";
+import {setAuthRedirectTo} from "../../store/actions/auth";
+import {resetMeeting} from "../../store/actions/meeting";
 
 
-    async initialLoad(){
-        this.props.resetError(); //Убираем ошибки при загрузке курса. Мы её получим, если она будет в CWRP
-        this.props.fetchCourseById(this.props.match.params.id); //Запрашиваем курс;
-        this.setState({
-            ...this.state,
-            initialLoad: false,
-        })
-    }
-
-    componentDidMount() {
-        if(this.props.readyStage){
-            this.initialLoad();
-        }
-    }
-
-    componentWillReceiveProps(nextProps, nextContext) {
-        if(nextProps.error){
-            this.props.setError(nextProps.error);
-            this.props.history.push("/error/")
-        }
-        if(nextProps.readyStage && this.state.initialLoad){
-            this.initialLoad();
-        }
-
-        if(!this.props.grade && this.props.id && !this.state.getGrade){
-            this.props.shouldGradeMeeting(this.props.id);
-            this.setState({
-                ...this.state,
-                getGrade: true,
-            })
-        }
-    }
-
-    componentWillUnmount() {
-        this.props.resetCourse();
-    }
-
-    state = {
+function Course(props){
+    const [state, setState] = useState({
         value: 0,
         editMeeting: false,
         meetingTitle: "",
@@ -70,47 +41,182 @@ class Course extends Component{
         initialLoad: true,
         getGrade: false,
         sendGrade: false,
+        openedLesson: "",
+    });
+
+    async function initialLoad(){
+        props.resetError(); //Убираем ошибки при загрузке курса. Мы её получим, если она будет в CWRP
+        props.fetchCourseById(props.match.params.id); //Запрашиваем курс;
+        setState({
+            ...state,
+            initialLoad: false,
+        })
     }
 
+    useEffect(()=> {
+        if(props.readyStage){
+            initialLoad();
+        }
+        return ()=> {
+            props.resetCourse();
+            props.resetMeeting();
+        }
+    }, [])
 
-    handleChange = (event, newValue) => {
-        this.setState({value: newValue});
+    useEffect(()=> {
+
+        if(props.authError){
+            props.setAuthRedirectTo("/courses/" + props.match.params.id);
+            props.resetAuthError();
+            props.history.push("/signin");
+        }
+
+        if(props.error){
+            props.setError(props.error);
+            props.history.push("/error/")
+        }
+        if(props.readyStage && state.initialLoad){
+            initialLoad();
+        }
+
+        if(!props.grade && props.id && !state.getGrade){
+            props.shouldGradeMeeting(props.id);
+            setState({
+                ...state,
+                getGrade: true,
+            })
+        }
+
+    }, [props.error, props.readyStage, state.initialLoad, props.grade, props.id, state.getGrade, props.authError])
+
+
+    const handleChange = (event, newValue) => {
+        setState({value: newValue});
     };
 
-    handleEditMeeting(){
-        this.setState({
-            ...this.state,
-            editMeeting: !this.state.editMeeting,
+    function handleEditMeeting(){
+        setState({
+            ...state,
+            editMeeting: !state.editMeeting,
         })
     }
 
-    handleMeetingTitle(e){
-        this.setState({
-            ...this.state,
-            meetingTitle: e.target.value,
-        })
-    }
-
-    handleMeetingContent(e){
-        this.setState({
-            ...this.state,
-            meetingContent: e.target.value,
-        })
-    }
-
-    handleStartMeeting(){
-        this.setState({
-            ...this.state,
+    function handleStartMeeting({title, content, CQ, CQ_title, CQ_answer, link}){
+        setState({
+            ...state,
             editMeeting: false,
-            meetingTitle: "",
-            meetingContent: "",
+            // meetingTitle: "",
+            // meetingContent: "",
         })
-        this.props.setMeeting(this.props.id, this.state.meetingTitle, this.state.meetingContent)
+        props.setMeeting(props.id, title, content, CQ, CQ_title, CQ_answer, link)
     }
 
 
-    render(){
-        let upperThis = this;
+    function taskRender(){
+        if(props.tasks === null){
+            props.fetchTasks(props.match.params.id);
+            return <Loader type="page"/>
+        } else if(props.tasks.length === 0) {
+            return <p>Пусто</p>
+        } else {
+            let closedHMW = [];
+            let activeHMW = [];
+            let tasks = [];
+            props.tasks.forEach(item => {
+                if(item.status === "OPEN" && item.type !== "TASK"){
+                    activeHMW.push(item)
+                } else if(item.status === "CLOSE" && item.type !== "TASK"){
+                    closedHMW.push(item)
+                } else if(item.type === "TASK"){
+                    tasks.push(item);
+                }
+
+            })
+            return [...activeHMW, ...tasks, ...closedHMW].map((task, index) => {
+                return <HomeworkPlank key={index}
+                                      title={task.title}
+                                      description={task.content}
+                                      status={task.status}
+                                      id={task._id}
+                                      editable={props.role === "TEACHER"}
+                                      type={task.type}
+                                      onEdit={()=> {
+                                          props.history.push("/setTask/" + props.id + "_" + task._id)
+                                      }}
+                />
+            })
+        }
+    }
+    function aboutRender(){
+        if(!props.about){
+            return <>Пусто</>
+        } else{
+            return <div className={`${css.aboutCourse} ${markCss["markdown-body"]}`} dangerouslySetInnerHTML={{__html: markdown.toHTML(props.about)}}/>;
+        }
+    }
+    function meetingsRender(){
+        if(props.meetings === null){
+            props.fetchCourseMeetings(props.match.params.id);
+            return <Loader type="page"/>
+        } else {
+            if(props.meetings.length === 0){
+                return <p>Пусто</p>
+            } else {
+                return props.meetings.map((meeting, index) => {
+                    return <LessonPlank key={meeting.id}
+                                        title={meeting.title}
+                        //editable={props.role === "TEACHER"}
+                                        id={meeting.id}
+                                        meeting={props.selectedMeeting}
+                                        open={state.openedLesson === meeting.id}
+                                        date={meeting.date}
+                                        onClick={()=> {
+                                            if(state.openedLesson === meeting.id){
+                                                setState({
+                                                    ...state,
+                                                    openedLesson: "",
+                                                })
+                                            } else {
+                                                setState({
+                                                    ...state,
+                                                    openedLesson: meeting.id,
+                                                })
+                                                props.fetchCourseMeeting(meeting.id, props.match.params.id)}
+                                        }
+                                        }
+                    />
+                })
+            }
+
+        }
+    }
+    function forTeacherRender(){
+        return <>
+            {/*<h4 className={css.teacherInfo}>Студентов на курсе: {props.studentsCount}</h4>*/}
+            <h4 className={css.teacherInfo}>Непроверенных работ: {props.needToCheck}</h4>
+            <Button type="primary" onClick={() => {
+                props.setHomeworkCourseId(props.id);
+                props.history.push("/homework");
+            }}  key={Math.random()}
+
+            >Проверить ДЗ</Button>
+            <div style={{marginBottom: 20}}/>
+
+            <Button type="primary" key={Math.random()}
+                    onClick={()=> props.history.push("/setTask/" + props.id + "_new")}
+            >Задать ДЗ</Button>
+            <div style={{marginBottom: 20}}/>
+            <Button type="primary" key={Math.random()}
+                    onClick={()=> props.history.push("/stats/" + props.id)}
+            >Статистика</Button>
+
+        </>
+    }
+
+
+
+
+    function render(){
         function a11yProps(index) {
             return {
                 id: `simple-tab-${index}`,
@@ -118,71 +224,19 @@ class Course extends Component{
             };
         }
 
-        function TabPanel(props) {
-            const { children, value, index, ...other } = props;
-
+        function TabPanel({ children, value, index, ...other }) {
             let content;
             if(value === index){
-                if(props.value === 0){
-                    if(!upperThis.props.about){
-                        content = <>Пусто</>
-                    } else{
-                        content = <div dangerouslySetInnerHTML={{__html: markdown.toHTML(upperThis.props.about)}}/>;
+                if(value === 0){
+                    content = aboutRender();
+                } else if(value === 1){
+                    content = taskRender();
+                } else if(value === 2){
+                    content = meetingsRender();
+                } else if(value === 3) {
+                    if(props.role === "TEACHER"){
+                        content = forTeacherRender();
                     }
-                } else if(props.value === 1){
-                    if(upperThis.props.tasks === null){
-                        content = <Loader type="page"/>
-                        upperThis.props.fetchTasks(upperThis.props.match.params.id);
-                    } else {
-                        content = upperThis.props.tasks.map((task, index) => {
-                            return <HomeworkPlank key={index}
-                                          title={task.title}
-                                          description={task.content}
-                                          status={task.status}
-                                          id={task._id}
-                                          editable={props.props.role === "TEACHER"}
-                                          onEdit={()=> {
-                                              upperThis.props.history.push("/setTask/" + upperThis.props.id + "_" + task._id)
-                                          }}
-                            />
-                        })
-                    }
-                } else if(props.value === 2){
-                    if(upperThis.props.meetings === null){
-                        content = <Loader type="page"/>
-                        //upperThis.props.fetchTasks(upperThis.props.match.params.id);
-                    } else {
-                        content = upperThis.props.meetings.map((task, index) => {
-                            return <HomeworkPlank key={index}
-                                                  title={task.title}
-                                                  description={task.content}
-                                                  status={task.status}
-                                                  id={task._id}
-                                                  editable={props.props.role === "TEACHER"}
-                                                  onEdit={()=> {
-                                                      upperThis.props.history.push("/setTask/" + upperThis.props.id + "_" + task._id)
-                                                  }}
-                            />
-                        })
-                    }
-                } else if(props.value === 3) {
-                    if(props.props.role === "TEACHER"){
-                        content = <>
-                            <Button type="primary" onClick={() => {
-                                props.props.setHomeworkCourseId(props.props.id);
-                                props.props.history.push("/homework");
-                            }}  key={Math.random()}
-
-                            >Проверить ДЗ</Button>
-                            <div style={{marginBottom: 20}}/>
-
-                            <Button type="primary" key={Math.random()}
-                                    onClick={()=> props.props.history.push("/setTask/" + props.props.id + "_new")}
-                            >Задать ДЗ</Button>
-                            <div style={{marginBottom: 20}}/>
-                        </>
-                    }
-
                 }
 
             }
@@ -206,68 +260,59 @@ class Course extends Component{
 
         function meetingRender(){
             let content;
-            const isMeeting = this.props.meeting && this.props.meeting.active;
-            if(isMeeting && this.props.role === "TEACHER"){
-                const meeting = this.props.meeting;
+            const isMeeting = props.meeting && props.meeting.active;
+            if(isMeeting && props.role === "TEACHER"){
+                const meeting = props.meeting;
                 content = (
                     <div className={css.teacherPannel}>
-                        {this.props.loading ?
+                        {props.loading ?
                             <Loader/> :
-                            <Button type="fail" marginReset onClick={()=> this.props.stopMeeting(this.props.id)}>Остановить занятие</Button>
+                            <Button type="fail" marginReset onClick={()=> props.stopMeeting(props.id)}>Остановить занятие</Button>
                         }
+                        {/*<MeetingPlank*/}
+                        {/*    title={meeting.title}*/}
+                        {/*    content={meeting.content}*/}
+                        {/*    signup={meeting.signup}*/}
+                        {/*    onClick={props.signupForMeeting.bind(this, props.id)}*/}
+                        {/*    loading={props.loading}*/}
+                        {/*/>*/}
                         <MeetingPlank
                             title={meeting.title}
                             content={meeting.content}
                             signup={meeting.signup}
-                            onClick={this.props.signupForMeeting.bind(this, this.props.id)}
-                            loading={this.props.loading}
+                            onClick={props.signupForMeeting.bind(this, props.id)}
+                            loading={props.loading}
+                            checkIn={!meeting.link}
+                            controlQuestion={meeting.CQ_title}
+                            controlQuestionAnswer={meeting.CQ_answer}
+                            error={props.meetingErrorCode}
+                            vk_link={props.teachers[0].vk_link}
                         />
                     </div>
                 )
-            } else if((!isMeeting) && this.props.role === "TEACHER"){
-                if(this.state.editMeeting){
-                    content = <form className={css.editMeeting} onSubmit={(e) => e.preventDefault()}>
-
-                        <input type="text"
-                               placeholder="Новое занятие"
-                               value={this.state.meetingTitle}
-                                onChange={this.handleMeetingTitle.bind(this)}
-                        />
-                        <textarea cols="30" rows="10"
-                                  defaultValue={this.state.meetingContent}
-                                  onChange={this.handleMeetingContent.bind(this)}
-                        />
-                        <Button type="success" marginReset
-                                disabled={!this.state.meetingTitle || !this.state.meetingContent}
-                                onClick={() => this.handleStartMeeting()}
-                        >
-                            Сохранить
-                        </Button>
-                        {
-                            this.props.loading ?
-                                <Loader/> :
-                                <Button type="fail" onClick={this.handleEditMeeting.bind(this)} marginReset>Отменить</Button>
-                        }
-
-                    </form>
+            } else if((!isMeeting) && props.role === "TEACHER"){
+                if(state.editMeeting){
+                    content = <StartMeetingPlank onStart={handleStartMeeting} onRefuse={handleEditMeeting}/>
                 } else {
                     content = <>
                         {
-                           this.props.loading ?
+                           props.loading ?
                            <Loader/> :
-                               <Button type="primary" onClick={this.handleEditMeeting.bind(this)}>Начать занятие</Button>
+                               <Button type="primary" onClick={handleEditMeeting.bind(this)}>Начать занятие</Button>
                         }
                         </>
                 }
 
-            } else if(isMeeting && this.props.role !== "TEACHER"){
-                const meeting = this.props.meeting;
+            } else if(isMeeting && props.role !== "TEACHER"){
+                const meeting = props.meeting;
                 content = <MeetingPlank
                     title={meeting.title}
                     content={meeting.content}
                     signup={meeting.signup}
-                    onClick={this.props.signupForMeeting.bind(this, this.props.id)}
-                    loading={this.props.loading}
+                    onClick={props.signupForMeeting.bind(this, props.id)}
+                    loading={props.loading}
+                    checkIn={!meeting.link}
+                    controlQuestion={meeting.CQ_title}
                 />
 
             }
@@ -277,12 +322,12 @@ class Course extends Component{
         }
 
         function gradeRender(){
-            if(this.props.grade){
-                if(!this.props.gradeLoading){
+            if(props.grade){
+                if(!props.gradeLoading){
                     return <Grade anonymous
-                                  title={this.props.grade.title}
-                                  date={this.props.grade.date.split("T")[0]}
-                                  onSend={(mark, comment)=> { this.props.gradeMeeting(this.props.id, mark, comment)}}
+                                  title={props.grade.title}
+                                  date={props.grade.date.split("T")[0]}
+                                  onSend={(mark, comment)=> { props.gradeMeeting(props.id, mark, comment)}}
                     />
                 } else {
                     return <Loader/>
@@ -295,36 +340,36 @@ class Course extends Component{
         return (
             <div>
                 {
-                    !this.props.title ? <Loader type="page"/> :
+                    !props.title ? <Loader type="page"/> :
                     <>
                         <div className={css.Course}>
-                            <CourseBackground title={this.props.title} preview={this.props.preview}/>
+                            <CourseBackground title={props.title} preview={props.preview} teachers={prepTeachersNames(props.teachers)}/>
                         </div>
                         {gradeRender.call(this)}
                         {meetingRender.call(this)}
                         <div>
                             <Box sx={{ borderBottom: 1, borderColor: 'divider' }} style={{display: 'flex', justifyContent: "center"}}>
-                                <Tabs value={this.state.value} onChange={this.handleChange} aria-label="basic tabs example">
+                                <Tabs value={state.value} onChange={handleChange} aria-label="basic tabs example">
                                     <Tab label="О курсе" {...a11yProps(0)} />
                                     <Tab label="Задачи" {...a11yProps(1)} />
                                     <Tab label="Занятия" {...a11yProps(2)} />
-                                    {this.props.role === "TEACHER" ?
+                                    {props.role === "TEACHER" ?
                                         <Tab label="Преподавателю" {...a11yProps(3)} /> :
                                         null
                                     }
                                 </Tabs>
                             </Box>
                             <div className={css.tabContent}>
-                                <TabPanel value={this.state.value} props={this.props} index={0}>
+                                <TabPanel value={state.value} props={props} index={0}>
                                     Item One
                                 </TabPanel>
-                                <TabPanel value={this.state.value} props={this.props} index={1}>
+                                <TabPanel value={state.value} props={props} index={1}>
                                     Item Two
                                 </TabPanel>
-                                <TabPanel value={this.state.value} props={this.props} index={2}>
+                                <TabPanel value={state.value} props={props} index={2}>
                                     Item Two
                                 </TabPanel>
-                                <TabPanel value={this.state.value} props={this.props} index={3}>
+                                <TabPanel value={state.value} props={props} index={3}>
                                     Item Three
                                 </TabPanel>
                             </div>
@@ -336,22 +381,28 @@ class Course extends Component{
             </div>
         )
     }
+    return <>{render()}</>
 }
 
 function mapDispatchToProps(dispatch){
     return {
         fetchCourseById: (id)=> {dispatch(fetchCourseById(id))},
+        fetchCourseMeetings: (id)=> {dispatch(fetchCourseMeetings(id))},
+        fetchCourseMeeting: (m_id, c_id)=> {dispatch(fetchCourseMeeting(m_id, c_id))},
         fetchTasks: (id) => {dispatch(fetchCourseTasksById(id))},
         setError: (error) => {dispatch(setError(error))},
         resetError: () => {dispatch(resetCoursesError())},
         resetCourse: () => {dispatch(resetCourse())},
+        resetMeeting: () => {dispatch(resetMeeting())},
         setHomeworkCourseId: (courseId) => {dispatch(setHomeworkCourseId(courseId))},
         setHomeworkUserStatus: (status) => {dispatch(setHomeworkUserStatus(status))},
-        setMeeting: (course_id, title, content) => {dispatch(setMeeting(course_id, title, content))},
+        setMeeting: (course_id, title, content, CQ, CQ_title, CQ_answer, link) => {dispatch(setMeeting(course_id, title, content, CQ, CQ_title, CQ_answer, link))},
         stopMeeting: (course_id) => {dispatch(stopMeeting(course_id))},
-        signupForMeeting: (course_id) => {dispatch(signupForMeeting(course_id))},
+        signupForMeeting: (course_id, answer) => {dispatch(signupForMeeting(course_id, answer))},
         shouldGradeMeeting: (course_id) => {dispatch(shouldGradeMeeting(course_id))},
         gradeMeeting: (course_id, mark, comment) => {dispatch(gradeMeeting(course_id, mark, comment))},
+        setAuthRedirectTo: (to) => {dispatch(setAuthRedirectTo(to))},
+        resetAuthError: () => {dispatch(resetAuthError())}
     }
 }
 
@@ -364,14 +415,19 @@ function mapStateToProps(state){
         about: state.courses.course?.about,
         tasks: state.courses.tasks,
         meetings: state.courses.meetings,
+        selectedMeeting: state.courses.meeting,
         error: state.courses.error,
         role: state.courses.course?.role,
+        studentsCount: state.courses.course?.studentsCount,
+        needToCheck: state.courses.course?.needToCheck,
         id: state.courses.course?.id,
         meeting: state.courses.course?.meeting,
         loading: state.courses.loading,
         readyStage: state.auth.readyStage,
         grade: state.courses.grade,
         gradeLoading: state.courses.gradeLoading,
+        authError: state.courses.authError,
+        meetingErrorCode: state.meeting.code,
     }
 }
 

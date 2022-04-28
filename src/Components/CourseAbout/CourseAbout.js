@@ -4,9 +4,9 @@ import {connect} from "react-redux";
 import {
     fetchAboutCourseById,
     fetchCourseById,
-    fetchCourseTasksById, gradeMeeting,
+    fetchCourseTasksById, gradeMeeting, joinCourse,
     resetCourse,
-    resetCoursesError,
+    resetCoursesError, resetRedirect,
     setMeeting, shouldGradeMeeting, signupForMeeting, stopMeeting
 } from "../../store/actions/courses";
 import Loader from "../../Components/UI/Loader/Loader";
@@ -15,6 +15,9 @@ import Button from "../../Components/UI/Button/Button";
 import {setHomeworkCourseId, setHomeworkUserStatus} from "../../store/actions/homework";
 import CourseBackground from "../../Containers/Course/CourseBackground/CourseBackground";
 import {markdown} from "markdown";
+import markCss from "../../markdown/Markdown.module.css";
+import prepTeachersNames from "../../Containers/Course/auxiliary/prepTeachersNames";
+import {setAuthRedirect, setAuthRedirectTo} from "../../store/actions/auth";
 
 class CourseAbout extends Component{
 
@@ -33,22 +36,17 @@ class CourseAbout extends Component{
             this.initialLoad();
         }
     }
-
     componentWillReceiveProps(nextProps, nextContext) {
+        if(nextProps.redirectTo){
+            this.props.resetRedirect();
+            this.props.history.push(nextProps.redirectTo);
+        }
         if(nextProps.error){
             this.props.setError(nextProps.error);
             this.props.history.push("/error/")
         }
         if(nextProps.readyStage && this.state.initialLoad){
             this.initialLoad();
-        }
-
-        if(!this.props.grade && this.props.id && !this.state.getGrade){
-            this.props.shouldGradeMeeting(this.props.id);
-            this.setState({
-                ...this.state,
-                getGrade: true,
-            })
         }
     }
 
@@ -71,6 +69,39 @@ class CourseAbout extends Component{
         this.setState({value: newValue});
     };
 
+    button(){
+        let onClick;
+        let openLink = "/courses/about/" + this.props.match.params.id;
+
+        if(!this.props.token){
+            onClick = ()=> {
+                this.props.setAuthRedirect(openLink);
+                this.props.history.push("/signin")
+            }
+        } else {
+            onClick = () => this.props.joinCourse(this.props.id);
+        }
+
+        if(this.props.isMine){
+            openLink = "/courses/" + this.props.id;
+        }
+
+        function openMore(){
+            this.props.history.push(openLink);
+        }
+
+        let button;
+        if(this.props.isMine){
+            button = <p className={css.student}>Вы участник курса</p>
+        } else if(this.props.join){
+            button = <Button type="primary" marginReset={true} onClick={onClick}>Записаться</Button>
+        } else{
+            button =  <p className={css.warning}>Запись недоступна</p>
+        }
+        return button;
+
+    }
+
 
     render(){
         return (
@@ -79,9 +110,14 @@ class CourseAbout extends Component{
                     !this.props.title ? <Loader type="page"/> :
                         <>
                             <div >
-                                <CourseBackground title={this.props.title} preview={this.props.preview}/>
+                                <CourseBackground title={this.props.title} preview={this.props.preview}
+                                                  teachers={prepTeachersNames(this.props.teachers)}
+                                />
                             </div>
-                            <div className={css.aboutCourse}
+                            <div className={css.buttonJoin}>
+                                {this.button()}
+                            </div>
+                            <div className={`${css.aboutCourse} ${markCss["markdown-body"]}`}
                                 dangerouslySetInnerHTML={{__html: markdown.toHTML(this.props.about)}}/>
                         </>
 
@@ -94,17 +130,12 @@ class CourseAbout extends Component{
 function mapDispatchToProps(dispatch){
     return {
         fetchCourseById: (id)=> {dispatch(fetchAboutCourseById(id))},
-        fetchTasks: (id) => {dispatch(fetchCourseTasksById(id))},
         setError: (error) => {dispatch(setError(error))},
         resetError: () => {dispatch(resetCoursesError())},
         resetCourse: () => {dispatch(resetCourse())},
-        setHomeworkCourseId: (courseId) => {dispatch(setHomeworkCourseId(courseId))},
-        setHomeworkUserStatus: (status) => {dispatch(setHomeworkUserStatus(status))},
-        setMeeting: (course_id, title, content) => {dispatch(setMeeting(course_id, title, content))},
-        stopMeeting: (course_id) => {dispatch(stopMeeting(course_id))},
-        signupForMeeting: (course_id) => {dispatch(signupForMeeting(course_id))},
-        shouldGradeMeeting: (course_id) => {dispatch(shouldGradeMeeting(course_id))},
-        gradeMeeting: (course_id, mark, comment) => {dispatch(gradeMeeting(course_id, mark, comment))},
+        joinCourse: (id)=> dispatch(joinCourse(id)),
+        resetRedirect: () => {dispatch(resetRedirect())},
+        setAuthRedirect: (to) => {dispatch(setAuthRedirectTo(to))}
     }
 }
 
@@ -115,16 +146,16 @@ function mapStateToProps(state){
         preview: state.courses.course?.preview,
         teachers: state.courses.course?.teachers,
         about: state.courses.course?.about,
-        tasks: state.courses.tasks,
-        meetings: state.courses.meetings,
         error: state.courses.error,
-        role: state.courses.course?.role,
         id: state.courses.course?.id,
-        meeting: state.courses.course?.meeting,
         loading: state.courses.loading,
         readyStage: state.auth.readyStage,
         grade: state.courses.grade,
         gradeLoading: state.courses.gradeLoading,
+        token: !!state.auth.token,
+        join: state.courses.course?.join,
+        isMine: state.courses.course?.isMine,
+        redirectTo: state.courses.redirectTo,
     }
 }
 

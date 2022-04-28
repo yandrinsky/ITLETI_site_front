@@ -9,15 +9,38 @@ import {joinCourse} from "../../../store/actions/courses";
 
 function CoursePlank(props) {
 
-    let openLink = "/courses/about_" + props.id
+    let openLink = "/courses/about/" + props.id
 
 
-    let onClick;
-    if(!props.token){
-        onClick = ()=> props.history.push("/signin")
-    } else {
-        onClick = () => props.joinCourse(props.id);
-    }
+    // let onClick;
+    // if(!props.token){
+    //     onClick = ()=> props.history.push("/signin")
+    // } else {
+    //     onClick = () => props.joinCourse(props.id);
+    // }
+    //
+    // if(props.isMine){
+    //     openLink = "/courses/" + props.id;
+    // }
+    //
+    // function openMore(){
+    //     props.history.push(openLink);
+    // }
+    //
+    // function button(){
+    //     let button;
+    //     if(props.isMine){
+    //         button = <p className={css.student}>Вы участник курса</p>
+    //     } else if(props.join){
+    //         button = <Button type="primary" marginReset={true} onClick={onClick}>Записаться</Button>
+    //     } else{
+    //         button =  <p className={css.warning}>Запись недоступна</p>
+    //     }
+    //     return button;
+    //
+    // }
+
+    let onClick = () => props.history.push(openLink);
 
     if(props.isMine){
         openLink = "/courses/" + props.id;
@@ -32,7 +55,7 @@ function CoursePlank(props) {
         if(props.isMine){
             button = <p className={css.student}>Вы участник курса</p>
         } else if(props.join){
-            button = <Button type="primary" marginReset={true} onClick={onClick}>Записаться</Button>
+            button = <Button type="primary" marginReset={true} onClick={onClick}>Подробнее</Button>
         } else{
             button =  <p className={css.warning}>Запись недоступна</p>
         }

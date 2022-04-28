@@ -11,9 +11,10 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {withRouter} from "react-router-dom";
 import is from "is_js"
 import {connect} from "react-redux";
-import {registration, resetRedirect, resetSignInError, signIn} from "../../store/actions/auth";
+import {registration, resetAuthRedirectTo, resetRedirect, resetSignInError, signIn} from "../../store/actions/auth";
 import Loader from "../../Components/UI/Loader/Loader";
 import css from "./SignUp.module.css"
+import Popup from "../../Components/UI/Popup/Popup";
 
 const VK = window.VK;
 
@@ -33,23 +34,23 @@ function Copyright(props) {
 const theme = createTheme();
 
 
-function messages(error, props){
+function messages(error, props, state){
     if(props.error){
         return(
-            <Typography component="h1" variant="h5" style={{color: "red"}}>
-                Пользователь уже существует
+            <Typography component="h1" variant="h5" style={{color: "red", marginBottom: 25}}>
+                {props.error}
             </Typography>
         )
     } else if(error){
         return (
-            <Typography component="h1" variant="h5" style={{color: "red"}}>
+            <Typography component="h1" variant="h5" style={{color: "red", marginBottom: 25}}>
                 {error}
             </Typography>
         )
     } else {
         return (
             <Typography component="h1" variant="h5" className={css.title}>
-                Регистрация аккаунта
+                {state.regMode? "Регистрация" : "Изменение"} аккаунта
             </Typography>
         )
     }
@@ -62,6 +63,8 @@ class SignUp extends React.Component{
         tryingToSignUp: false,
         group: "",
         email: "",
+        regMode: !this.props.lackOfUsername,
+        popup: this.props.lackOfUsername,
     }
 
     componentDidMount() {
@@ -85,20 +88,35 @@ class SignUp extends React.Component{
                 id: this.props.vk.id,
                 link: this.props.vk.href,
             })
+        } else {
+            this.props.history.push("/signIn")
         }
 
 
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
+        if(nextProps.error){
+            console.log("HERE");
+            this.setState({...this.state, tryingToSignUp: false})
+        }
+
         if (nextProps.needToRedirect && !nextProps.error) {
-            resetRedirect();
-            nextProps.history.push('/courses');
+            this.props.resetRedirect();
+            if(nextProps.redirectTo){
+                this.props.resetAuthRedirectTo();
+                nextProps.history.push(nextProps.redirectTo);
+            } else{
+                nextProps.history.push('/courses');
+            }
+
         } else if(nextProps.vk) {
             this.setState({
                 ...this.state,
                 first_name: this.props.vk.first_name,
                 last_name: this.props.vk.last_name,
+                group: this.props.group,
+
             })
         } else if(nextProps.testMessage === false){
 
@@ -120,6 +138,16 @@ class SignUp extends React.Component{
     handleEmail(e){
         this.setState({...this.state, error: null, email: e.target.value});
     }
+    handlePassword(e){
+        this.setState({...this.state, error: null, password: e.target.value});
+    }
+    handlePassword2(e){
+        this.setState({...this.state, error: null, password2: e.target.value});
+    }
+    handleUsername(e){
+        this.setState({...this.state, error: null, username: e.target.value});
+    }
+
 
     handleSubmit = (event) => {
         event.preventDefault();
@@ -128,9 +156,12 @@ class SignUp extends React.Component{
 
         //const email = data.get('email');
         //const password = data.get('password');
-        const group = data.get('group');
-        const name = data.get('name');
-        const surname = data.get('surname');
+        const group = this.state.group;
+        const name = this.state.first_name;
+        const surname = this.state.last_name;
+        const password = this.state.password;
+        const password2 = this.state.password2;
+        const username = this.state.username;
         //const vk = data.get('vk');
 
         let upperThis = this;
@@ -138,7 +169,7 @@ class SignUp extends React.Component{
             upperThis.setState({error: e});
         }
 
-        if(group && name && surname){
+        if(group && name && surname && password && password2 && username){
             if(is.nan(Number(group))){
                 setError("Группа указана неверно")
                 return;
@@ -151,16 +182,25 @@ class SignUp extends React.Component{
             } else if(surname.length < 2){
                 setError("Фамилия не может быть менее 2 букв")
                 return;
+            } else if(this.state.password !== this.state.password2){
+                setError("Пароли не совпадают")
+                return;
+            } else if(this.state.username && this.state.username.length < 4){
+                setError("username слишком короткий")
+                return;
             }
 
             setError(null);
             this.setState({...this.state, tryingToSignUp: true})
+            console.log("tryingToSignUp: true");
             this.props.register({
                 name: this.state.first_name,
                 surname: this.state.last_name,
                 vk_id: this.props.vk.id,
                 vk_link: this.props.vk.href,
                 group: this.state.group,
+                password: this.state.password,
+                username: this.state.username,
             });
         } else {
             setError("Заполните все поля");
@@ -181,7 +221,7 @@ class SignUp extends React.Component{
                     >
                         <Box component="form" noValidate onSubmit={this.handleSubmit} sx={{ mt: 3 }}>
                         {this.props.testMessage === null ? <>
-                            {messages(this.state.error, this.props)}
+                            {messages(this.state.error, this.props, this.state)}
 
                                 <Grid container spacing={2}>
                                     <Grid item xs={12} sm={6}>
@@ -195,6 +235,7 @@ class SignUp extends React.Component{
                                             autoFocus
                                             onChange={this.handleName.bind(this)}
                                             value={this.state.first_name}
+                                            disabled={this.props.lackOfUsername}
                                         />
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
@@ -207,6 +248,7 @@ class SignUp extends React.Component{
                                             autoComplete="lname"
                                             onChange={this.handleSurname.bind(this)}
                                             value={this.state.last_name}
+                                            disabled={this.props.lackOfUsername}
                                         />
                                     </Grid>
                                     <Grid item xs={12}>
@@ -219,6 +261,42 @@ class SignUp extends React.Component{
                                             autoComplete="email"
                                             onChange={this.handleGroup.bind(this)}
                                             value={this.state.group}
+                                            disabled={this.props.lackOfUsername}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            id="username"
+                                            label="username"
+                                            name="username"
+                                            onChange={this.handleUsername.bind(this)}
+                                            value={this.state.username}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            id="password"
+                                            label="password"
+                                            name="password"
+                                            onChange={this.handlePassword.bind(this)}
+                                            value={this.state.password}
+                                            type="password"
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            required
+                                            fullWidth
+                                            id="password2"
+                                            label="password"
+                                            name="password2"
+                                            onChange={this.handlePassword2.bind(this)}
+                                            value={this.state.password2}
+                                            type="password"
                                         />
                                     </Grid>
                                     {/*</Grid>*/}
@@ -233,7 +311,7 @@ class SignUp extends React.Component{
                                             variant="contained"
                                             sx={{ mt: 3, mb: 2 }}
                                         >
-                                            Регистрация
+                                            {this.state.regMode ? "Регистрация" : "Изменить"}
                                         </Button> :
                                         <Loader/>
                                 }
@@ -250,9 +328,16 @@ class SignUp extends React.Component{
                             </div>
 
                         </Box>
-
-
                     </Box>
+                    <Popup onAccept={()=> this.setState({...this.state, popup: false})}
+                        onDeny={()=> this.setState({...this.state, popup: false})}
+                           open={this.state.popup}
+                    >
+                        <h1>Изменение способа входа</h1>
+                        <p><b>С вашим аккаунтом всё хорошо</b>, мы просто добавили новую возможность входа - по логину и
+                            паролю. Вам необходимо задать логин и пароль, чтобы воспользоваться данной возможностью
+                        </p>
+                    </Popup>
                 </Container>
             </ThemeProvider>
         );
@@ -263,15 +348,19 @@ function mapDispatchToProps(dispatch){
     return {
         register: (username, password, group, vk, name, surname) => dispatch(registration(username, password, group, vk, name, surname)),
         resetSignInError: () => dispatch(resetSignInError()),
-        signIn: (vk_id) => dispatch(signIn(vk_id)),
+        resetRedirect: ()=> dispatch(resetRedirect()),
+        resetAuthRedirectTo: ()=> dispatch(resetAuthRedirectTo()),
     }
 }
 function mapStateToProps(state){
     return {
         error: state.auth.error,
         needToRedirect: state.auth.needToRedirect,
+        redirectTo: state.auth.redirectTo,
         vk: state.auth.vk,
+        group: state.auth.group,
         testMessage: state.auth.testMessage,
+        lackOfUsername: state.auth.lackOfUsername,
     }
 }
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignUp));

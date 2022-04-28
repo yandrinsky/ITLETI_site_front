@@ -12,6 +12,9 @@ export default withRouter((props)=> {
     if(props.status === "CLOSE"){
         cls.push(css.close)
     }
+    if(props.type === "TASK"){
+        cls.push(css.task)
+    }
 
     let  mainClick = () =>  props.history.push("/tasks/" + props.id)
 
@@ -24,7 +27,8 @@ export default withRouter((props)=> {
     function createDescription(description){
         let div = document.createElement("div");
         div.innerHTML = markdown.toHTML(description).slice(0, 100);
-        return div.children[0].children[0] ? div.children[0].children[0].innerHTML.slice(0, 100) + "..." : div.children[0].innerHTML.slice(0, 100) + "..." ;
+        let source = div.children[0].children[0] ? div.children[0].children[0] : div.children[0];
+        return source.innerHTML.slice(0, 100).length > 70 ? source.innerHTML.slice(0, 70) + "..." : source.innerHTML.slice(0, 70) ;
     }
 
     return (

@@ -14,10 +14,15 @@ import HomeworkStatus from "../../Components/UI/HomeworkStatus/HomeworkStatus";
 import {setError} from "../../store/actions/error";
 import {withRouter} from "react-router-dom";
 import {fetchTaskById, resetTask, sendHomework} from "../../store/actions/task";
-import {logout} from "../../store/actions/auth";
+import {logout, setAuthRedirectTo} from "../../store/actions/auth";
+import {resetAuthError} from "../../store/actions/courses";
+import remarkGfm from "remark-gfm";
+import ReactMarkdown from "react-markdown";
+import Textarea from "../../Components/UI/Textarea/Textarea";
 
 
-//Интерфейст отправки дз учеником
+//Интерфейс отправки дз учеником
+
 class Task extends Component{
 
 
@@ -70,10 +75,19 @@ class Task extends Component{
             }
         }
 
+        if(nextProps.authError){
+            this.props.setAuthRedirectTo("/tasks/" + this.props.match.params.id);
+            this.props.resetAuthError();
+            this.props.history.push("/signin");
+        }
+
         if(nextProps.error){
             this.props.setError(nextProps.error);
             this.props.history.push("/error");
         }
+
+
+
         if(nextProps.readyStage && this.state.initialLoad){
             this.initialLoad();
         }
@@ -97,10 +111,10 @@ class Task extends Component{
         })
     }
 
-    commentHandler(e){
+    commentHandler(value){
         this.setState({
             ...this.state,
-            commentText: e.target.value,
+            commentText: value,
             error: null,
         })
     }
@@ -118,11 +132,11 @@ class Task extends Component{
         }
     }
 
-    homeworkHandle(e){
+    homeworkHandle(value){
         this.setState({
             ...this.state,
             error: null,
-            homeworkText: e.target.value,
+            homeworkText: value,
         })
 
     }
@@ -162,13 +176,10 @@ class Task extends Component{
                                dangerouslySetInnerHTML={{__html: markdown.toHTML("#" + this.props.task.title)}}
                             />
                             <div className={css.hmwStatus}>
-
-                                <HomeworkStatus status={this.state.status}/>
+                                <HomeworkStatus status={this.props.task.homeworkStatus}/>
                             </div>
 
-                            <p className={markCss["markdown-body"]}
-                                dangerouslySetInnerHTML={{__html: markdown.toHTML(this.props.task.content)}}
-                            />
+                            <ReactMarkdown children={this.props.task.content} className={markCss["markdown-body"]} remarkPlugins={[remarkGfm]}/>
                         </div>
 
                         <div className={css.form}>
@@ -179,19 +190,18 @@ class Task extends Component{
                                         <p>Ожидается ссылка на ресурс {this.props.task.resource}</p>
                                         <input type="text" disabled={!this.props.task.ableToSend}
                                                value={this.state.homeworkText}
-                                               onChange={this.homeworkHandle.bind(this)}
+                                               onChange={(e)=> this.homeworkHandle.call(this, e.target.value)}
                                         />
                                     </> : null
-
-
                             }
                             {
                                 this.props.task.contentType === "TEXT" ?
-                                    <textarea name="" id="" cols="30" rows="10"
+                                    <Textarea name="" id="" cols="30" rows="10"
                                               disabled={!this.props.task.ableToSend}
                                               value={this.state.homeworkText}
                                               onChange={this.homeworkHandle.bind(this)}
-                                    >        </textarea>
+                                              className={css.Textarea}
+                                    >        </Textarea>
                                     : null
                             }
 
@@ -214,6 +224,7 @@ class Task extends Component{
                                                 content={this.state.commentText}
                                                 className={css.currentComment}
                                                 onChange={(e)=> {this.commentHandler(e)}}
+                                                placeholder={"Ваш комментарий"}
                                             />
                                             <div className={css.deleteComment}>
                                                 <ClearIcon onClick={this.removeComment.bind(this)}/>
@@ -268,6 +279,8 @@ function mapDispatchToProps(dispatch){
         resetTask: () => {dispatch(resetTask())},
         sendHomework: (task_id, homework, comment) => {dispatch(sendHomework(task_id, homework, comment))},
         setError: (error) => {dispatch(setError(error))},
+        setAuthRedirectTo: (to) => {dispatch(setAuthRedirectTo(to))},
+        resetAuthError: (to) => {dispatch(resetAuthError())}
     }
 }
 
@@ -278,6 +291,7 @@ function mapStateToProps(state){
         sendingError: state.task.error,
         sendingSuccess: state.task.homeworkSuccess,
         error: state.task.error,
+        authError: state.courses.authError,
         readyStage: state.auth.readyStage,
     }
 }

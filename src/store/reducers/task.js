@@ -1,6 +1,6 @@
 import {
     FETCH_TASK, FETCH_TASK_ERROR,
-    FETCH_TASK_START, RESET_TASK,
+    FETCH_TASK_START, RESET_FETCH_TASK_ERROR, RESET_TASK,
     SEND_HOMEWORK_ERROR,
     SEND_HOMEWORK_START,
     SEND_HOMEWORK_SUCCESS, SET_TASK_START, SET_TASK_SUCCESS
@@ -63,6 +63,13 @@ export default function taskReducer(state = initialState, action){
                 ...state,
                 error: action.error,
                 success: false,
+                loading: false,
+            }
+        case RESET_FETCH_TASK_ERROR:
+            return {
+                ...state,
+                error: null,
+                loading: false,
             }
         case SET_TASK_START:
             return {

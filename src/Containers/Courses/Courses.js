@@ -1,45 +1,43 @@
-import React, {Component} from "react"
+import React, {Component, useEffect, useState} from "react"
 import {connect} from "react-redux";
 import {fetchCourseById, fetchCourses, resetRedirect} from "../../store/actions/courses";
 import Loader from "../../Components/UI/Loader/Loader";
 import CoursePlank from "./CoursePlank/CoursePlank";
 import css from "./Courses.module.css"
 
-class Courses extends Component{
+function Courses(props){
+    const [state, setState] = useState({
+        initialLoad: true
+    });
 
-
-    state = {
-        initialLoad: true,
-    }
-
-    async initialLoad(){
-        this.props.fetchCourses();
-        this.setState({
-            ...this.setState({
-                initialLoad: false,
-            })
+    async function initialLoad(){
+        props.fetchCourses();
+        setState({
+            ...state,
+            initialLoad: false,
         })
     }
 
-    componentDidMount() {
-        if(this.props.readyStage){
-            this.initialLoad();
+    useEffect(()=> {
+        if(props.readyStage){
+            initialLoad();
         }
-    }
+    }, [])
 
-    componentWillReceiveProps(nextProps, nextContext) {
-        if(nextProps.redirectTo){
-            this.props.resetRedirect();
-            this.props.history.push(nextProps.redirectTo);
+    useEffect(()=> {
+        if(props.redirectTo){
+            props.resetRedirect();
+            props.history.push(props.redirectTo);
         }
-        if(nextProps.readyStage && this.state.initialLoad){
-            this.initialLoad();
+        if(props.readyStage && state.initialLoad && !props.courses.courses){
+            initialLoad();
         }
-    }
+    }, [props.redirectTo, props.readyStage, props.initialLoad, props.courses.courses])
 
-    renderCourses(){
-        if(this.props.courses.courses){
-            return this.props.courses.courses.map(course => {
+
+    function renderCourses(){
+        if(props.courses.courses){
+            return props.courses.courses.map(course => {
                 return <CoursePlank
                     title={course.title}
                     description={course.description}
@@ -57,21 +55,19 @@ class Courses extends Component{
 
     }
 
-    render(){
-        return (
-            <div className={css.Courses}>
-                <h1>Курсы</h1>
-                {this.props.courses.loading ?
-                    <Loader type="page" /> :
+    return (
+        <div className={css.Courses}>
+            <h1>Курсы</h1>
+            {props.courses.courses === null ?
+                <Loader type="page" /> :
 
-                    this.renderCourses()
-                }
-            </div>
+                renderCourses()
+            }
+        </div>
 
-        )
-    }
+    )
+
 }
-
 function mapStateToProps(state){
     return {
         courses: state.courses,

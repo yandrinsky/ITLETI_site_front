@@ -1,0 +1,42 @@
+.Lesson{
+    border: 3px solid #2884F6;
+    background-color: white !important;
+    box-sizing: border-box;
+}
+
+.TextCenter{
+    display: flex;
+    align-items: center;
+}
+
+.Lesson .title{
+    font-weight: bold;
+    margin-bottom: 5px;
+    margin-left: 15px;
+    font-size: 18px;
+    color: #263238;
+}
+
+.open{
+    height: 600px !important;
+}
+.lessonContainer p{
+    margin: 5px;
+    padding: 0;
+}
+
+.green{
+    color: #4caf50;
+}
+
+.orange{
+    color: #ff9800;
+}
+
+.text_center{
+    text-align: center;
+}
+
+.red{
+    color: #d50000;
+}

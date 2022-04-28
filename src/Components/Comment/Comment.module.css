@@ -4,7 +4,7 @@
 }
 
 .Comment textarea{
-    height: 100px;
+    min-height: 100px;
     resize: none;
     width: 100%;
     font-size: 16px;
@@ -14,6 +14,7 @@
     background-color: transparent;
     padding: 10px;
     border-radius: 5px;
+    overflow-y: hidden;
 }
 
 .Comment textarea:focus{

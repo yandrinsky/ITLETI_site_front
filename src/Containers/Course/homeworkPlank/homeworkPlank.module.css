@@ -46,6 +46,15 @@
     background-color: #cfd8dc !important;
 }
 
+.task{
+    /*background-color: #64b5f6 !important;*/
+    background-color: #2196f3 !important;
+    color: #F9F9F9;
+}
+.task .title{
+    color: #F9F9F9;
+}
+
 .editBtn{
     position: absolute;
     right: 10px;

@@ -32,7 +32,6 @@ class Article extends Component{
             })
 
             e.target.selectionStart = e.target.selectionEnd = start + 1;
-            console.log(this.state)
         }
 
         // document.getElementById('textbox').addEventListener('keydown', function(e) {
