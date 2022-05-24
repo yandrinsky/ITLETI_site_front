@@ -1,1 +1,3 @@
-export const vk_id = 8083625;
+import {VK_ID} from "../../ENV";
+
+export const vk_id = VK_ID;
